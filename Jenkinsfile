@@ -5,6 +5,9 @@ pipeline {
     
         stage('Prepare environment') {
             steps {
+		apt-get update     
+		apt-get install python2.7    
+		ln -s /usr/bin/python2.7 /usr/bin/python 
                 sh 'export WEB=true'
                 sh 'echo $WEB'
            }
