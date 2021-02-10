@@ -4,8 +4,8 @@
 /release
 /tests
 .git
-/node_modules/*
-!/node_modules/node-pre-gyp
+node_modules/*
+!node_modules/node-pre-gyp/
 /dist
 .idea
 .vscode
