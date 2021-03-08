@@ -31,6 +31,7 @@ export interface AppConfig {
         MAX_PASSWORD_LENGTH: number;
         MAX_SEED_ACCOUNTS_NUMBER: number;
         MIN_PASSWORD_LENGTH: number;
+        DECIMAL_SEPARATOR: string;
     };
     title: string;
     marketServerUrl: string;
@@ -47,12 +48,13 @@ const defaultAppConfig: AppConfig = {
         MIN_PASSWORD_LENGTH: 8,
         SEED_ACCOUNT_NAME_PREFIX: 'SeedWallet-',
         ANNOUNCE_TRANSACTION_TIMEOUT: 120000,
+        DECIMAL_SEPARATOR: Number('1.1').toLocaleString().substring(1, 2),
     },
     languages: [
         { value: 'en-US', label: 'English' },
     ],
     marketServerUrl: 'http://app.nemcn.io',
-    articlesFeedUrl: 'https://cors-anywhere.herokuapp.com/https://cryptonews.com/news/feed',
+    articlesFeedUrl: 'https://cors.bridged.cc/https://cryptonews.com/news/feed',
 };
 const resolvedAppConfig: AppConfig = window['appConfig'] || defaultAppConfig;
 console.log('appConfig resolved!', resolvedAppConfig);

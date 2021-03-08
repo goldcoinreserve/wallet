@@ -15,7 +15,7 @@
  */
 import { Component, Vue } from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
-import { AccountInfo, Address, MosaicId, Password, RepositoryFactory, SimpleWallet } from 'symbol-sdk';
+import { AccountInfo, Address, MosaicId, NetworkType, Password, RepositoryFactory, SimpleWallet } from 'symbol-sdk';
 import { MnemonicPassPhrase } from 'symbol-hd-wallets';
 // internal dependencies
 import { AccountModel, AccountType } from '@/core/database/entities/AccountModel';
@@ -51,6 +51,13 @@ export default class AccountSelectionTs extends Vue {
      * @protected
      */
     protected formatters = Formatters;
+
+    /**
+     * Network's currency mosaic id
+     * @see {Store.networkType}
+     * @var {NetworkType}
+     */
+    public networkType: NetworkType;
 
     /**
      * Network's currency mosaic id
@@ -123,7 +130,7 @@ export default class AccountSelectionTs extends Vue {
      * @return {void}
      */
     async mounted() {
-        this.derivation = new DerivationService();
+        this.derivation = new DerivationService(this.currentProfile.networkType);
         this.accountService = new AccountService();
 
         Vue.nextTick().then(() => {
@@ -171,8 +178,6 @@ export default class AccountSelectionTs extends Vue {
             this.profileService.updateAccounts(this.currentProfile, accountIdentifiers);
 
             // execute store actions
-            this.$store.dispatch('temporary/RESET_STATE');
-            this.$store.dispatch('notification/ADD_SUCCESS', NotificationType.OPERATION_SUCCESS);
             return this.$router.push({ name: 'profiles.importProfile.finalize' });
         } catch (error) {
             return this.$store.dispatch('notification/ADD_ERROR', error);
@@ -228,12 +233,13 @@ export default class AccountSelectionTs extends Vue {
      * @return {AccountModel}
      */
     private createAccountsFromPathIndexes(indexes: number[]): AccountModel[] {
+        const accountPath = AccountService.getAccountPathByNetworkType(this.currentProfile.networkType);
         const paths = indexes.map((index) => {
             if (index == 0) {
-                return AccountService.DEFAULT_ACCOUNT_PATH;
+                return accountPath;
             }
 
-            return this.derivation.incrementPathLevel(AccountService.DEFAULT_ACCOUNT_PATH, DerivationPathLevels.Profile, index);
+            return this.derivation.incrementPathLevel(accountPath, DerivationPathLevels.Profile, index);
         });
 
         const accounts = this.accountService.generateAccountsFromPaths(

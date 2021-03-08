@@ -1,6 +1,12 @@
 pipeline {
-    agent { docker { image 'node:12-alpine' } }
-    
+    agent { 
+
+         docker { image 'node:12' }
+        // dockerfile {
+        //     filename 'Dockerfile.jenkins'
+        //  } 
+     }
+
     stages {
     
         stage('Prepare environment') {

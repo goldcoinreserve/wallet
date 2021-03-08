@@ -124,7 +124,7 @@ export class FormSubAccountCreationTs extends Vue {
 
     public created() {
         this.accountService = new AccountService();
-        this.paths = new DerivationService();
+        this.paths = new DerivationService(152);
         this.formItems.type = this.isPrivateKeyProfile ? 'privatekey_account' : 'child_account';
     }
 

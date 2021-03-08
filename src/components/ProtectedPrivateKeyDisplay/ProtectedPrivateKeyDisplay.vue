@@ -1,17 +1,25 @@
 <template>
     <div class="detail-row">
-        <div class="account-detail-row-3cols">
-            <span class="label">{{ $t('private_key') }}</span>
+        <div :class="[$route.fullPath === '/delegatedHarvesting' ? 'account-detail-harvesting' : 'account-detail-row-3cols']">
+            <span v-if="$route.fullPath !== '/delegatedHarvesting'" class="label">{{ $t('private_key') }}</span>
             <span v-if="hasPlainPrivateKey" class="value accountPublicKey">{{ plainInformation }}</span>
             <span v-if="hasPlainPrivateKey">
                 <span>
-                    <ButtonCopyToClipboard v-model="plainInformation">
-                        <img src="@/views/resources/img/account/cloneIcon.svg" class="copy-icon" />
-                    </ButtonCopyToClipboard>
+                    <ButtonCopyToClipboard v-model="plainInformation" type="icon-black" />
                 </span>
             </span>
             <div v-else>
-                <div class="value">
+                <Tooltip
+                    v-if="!hasPrivateKey"
+                    word-wrap
+                    placement="bottom"
+                    class="linked-label not-linked-input"
+                    :content="$t('please_link_your_public_key')"
+                >
+                    <span> {{ $t('not_linked') }}:</span>
+                    <Icon type="ios-information-circle-outline" />
+                </Tooltip>
+                <div v-else class="value">
                     <button type="button" class="show-button" @click="onClickDisplay">
                         {{ $t('show_button') }}
                     </button>
@@ -43,12 +51,6 @@ export default class ProtectedPrivateKeyDisplay extends ProtectedPrivateKeyDispl
     color: @purpleLightest;
 }
 
-.copy-icon {
-    width: 0.24rem;
-    height: 0.24rem;
-    cursor: pointer;
-}
-
 .timer-span {
     padding-left: 8px;
 }
@@ -63,5 +65,15 @@ export default class ProtectedPrivateKeyDisplay extends ProtectedPrivateKeyDispl
 .account-detail-row-3cols {
     display: grid;
     grid-template-columns: 1.4rem 5rem auto;
+}
+
+.account-detail-harvesting {
+    display: grid;
+    grid-template-columns: 5rem auto;
+}
+
+.not-linked-input {
+    padding-left: 0.15rem;
+    padding-top: 4px;
 }
 </style>

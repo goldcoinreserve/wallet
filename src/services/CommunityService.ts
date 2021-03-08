@@ -14,9 +14,9 @@
  *
  */
 import RSSParser from 'rss-parser';
-import axios from 'axios';
 // configuration
 import { appConfig } from '@/config';
+import { corsAxios } from '@bridged.xyz/client-sdk'
 
 /// region protected helpers
 /**
@@ -26,11 +26,9 @@ import { appConfig } from '@/config';
  */
 const request = async (): Promise<string> => {
     let feedUrl = appConfig.articlesFeedUrl;
-    // execute request
-    const response = await axios.get(feedUrl, { params: {} });
+    const response = await corsAxios.get(feedUrl);
     return response.data;
 };
-
 /// end-region protected helpers
 
 export interface ArticleEntry {

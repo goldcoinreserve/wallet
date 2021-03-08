@@ -17,8 +17,7 @@
 import { NamespaceModel } from '@/core/database/entities/NamespaceModel';
 import { Address, NamespaceName, RepositoryFactory } from 'symbol-sdk';
 import { Observable, of } from 'rxjs';
-import { flatMap, map, tap, combineAll } from 'rxjs/operators';
-import { ObservableHelpers } from '@/core/utils/ObservableHelpers';
+import { flatMap, map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { TimeHelpers } from '@/core/utils/TimeHelpers';
 import { NetworkConfigurationModel } from '@/core/database/entities/NetworkConfigurationModel';
@@ -43,43 +42,45 @@ export class NamespaceService {
      * @param generationHash the current network generation hash.
      * @param addresses the current addresses.
      */
-    public getNamespaces(repositoryFactory: RepositoryFactory, generationHash: string, addresses: Address[]): Observable<NamespaceModel[]> {
-        if (!addresses.length) {
-            return of([]);
+    public getNamespaces(
+        repositoryFactory: RepositoryFactory,
+        address: Address,
+        { pageSize, pageNumber }: { pageSize: number; pageNumber: number } = {
+            pageSize: 20,
+            pageNumber: 1,
+        },
+    ): Observable<{ models: NamespaceModel[]; pageInfo: { pageNumber: number; isLastPage: boolean } }> {
+        if (!address) {
+            return of({ models: [], pageInfo: { pageNumber: 1, isLastPage: true } });
         }
 
-        const namespaceModelList = this.namespaceModelStorage.get(generationHash) || [];
         const namespaceRepository = repositoryFactory.createNamespaceRepository();
 
-        return addresses
-            .map(
-                (address: Address): Observable<NamespaceModel[]> => {
-                    return namespaceRepository
-                        .search({ ownerAddress: address })
-                        .pipe(
-                            flatMap((namespaceInfos) => {
-                                return namespaceRepository.getNamespacesNames(namespaceInfos.data.map((info) => info.id)).pipe(
-                                    map((names) => {
-                                        return namespaceInfos.data.map((namespaceInfo) => {
-                                            const reference = _.first(
-                                                names.filter((n) => n.namespaceId.toHex() === namespaceInfo.id.toHex()),
-                                            );
-                                            return new NamespaceModel(
-                                                namespaceInfo,
-                                                NamespaceService.getFullNameFromNamespaceNames(reference, names),
-                                            );
-                                        });
-                                    }),
-                                );
-                            }),
-                        )
-                        .pipe(
-                            tap((d: NamespaceModel[]) => this.namespaceModelStorage.set(generationHash, d)),
-                            ObservableHelpers.defaultFirst(namespaceModelList),
-                        );
-                },
-            )
-            .reduce((previous) => previous.pipe(combineAll()));
+        return namespaceRepository.search({ ownerAddress: address, pageSize, pageNumber }).pipe(
+            flatMap((namespaceInfos) => {
+                return namespaceRepository
+                    .getNamespacesNames(namespaceInfos.data.map((info) => info.id))
+                    .pipe(
+                        map((names) => {
+                            return namespaceInfos.data.map((namespaceInfo) => {
+                                const reference = _.first(names.filter((n) => n.namespaceId.toHex() === namespaceInfo.id.toHex()));
+                                return new NamespaceModel(namespaceInfo, NamespaceService.getFullNameFromNamespaceNames(reference, names));
+                            });
+                        }),
+                    )
+                    .pipe(
+                        map((models) => {
+                            return {
+                                models,
+                                pageInfo: {
+                                    pageNumber: namespaceInfos.pageNumber,
+                                    isLastPage: namespaceInfos.isLastPage,
+                                },
+                            };
+                        }),
+                    );
+            }),
+        );
     }
 
     public static getExpiration(

@@ -34,7 +34,7 @@
                     <div class="form-row align-right action-link" style="margin-top: -0.1rem;">
                         <a
                             v-if="mosaicInputsManager.hasFreeSlots()"
-                            style="color: #3d3d3d; margin-right: 0.1rem; font-size: 0.14rem;"
+                            style="color: #44004e; margin-right: 0.1rem; font-size: 0.14rem;"
                             @click="addMosaicAttachmentInput"
                             >{{ $t('add_mosaic') }}</a
                         >
@@ -48,7 +48,7 @@
 
                     <!-- Transfer message input field -->
                     <MessageInput v-model="formItems.messagePlain" @input="onChangeMessage" />
-                    <FormRow v-if="!selectedSigner.multisig && !isAggregate">
+                    <FormRow v-if="!selectedSigner.multisig && !isAggregate && !isLedger">
                         <template v-slot:inputs>
                             <div class="inputs-container checkboxes">
                                 <Checkbox v-model="formItems.encryptMessage" @input="onEncryptionChange">
@@ -65,11 +65,17 @@
                         :hide-submit="hideSubmit"
                         :calculated-recommended-fee="calculatedRecommendedFee"
                         :calculated-highest-fee="calculatedHighestFee"
+                        :disable-submit="currentAccount.isMultisig"
                         @button-clicked="handleSubmit(onSubmit)"
                         @input="onChangeMaxFee"
                     />
-                    <div v-else class="ml-2" style="text-align: right;">
-                        <button type="submit" class="save-button centered-button button-style inverted-button" @click="emitToAggregate">
+                    <div v-else-if="!hideSave" class="ml-2" style="text-align: right;">
+                        <button
+                            type="submit"
+                            class="save-button centered-button button-style inverted-button"
+                            :disabled="currentAccount.isMultisig"
+                            @click="emitToAggregate"
+                        >
                             {{ $t('save') }}
                         </button>
                     </div>
@@ -121,5 +127,9 @@ export default class FormTransferTransaction extends FormTransferTransactionTs {
 .save-button {
     text-align: center;
     width: 120px;
+}
+
+/deep/.multisig_ban_container {
+    padding-left: 0.7rem;
 }
 </style>

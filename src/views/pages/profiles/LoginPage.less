@@ -91,7 +91,6 @@
                     left: unset !important;
                     width: 3.4rem !important;
                 }
-
                 .ivu-select-selection .ivu-select-placeholder,
                 .ivu-select-selection .ivu-select-selected-value {
                     color: @black !important;
@@ -172,7 +171,6 @@
                 line-height: 0.17rem;
                 display: flex;
                 min-height: 0.56rem;
-
                 .prompt {
                     width: 100%;
                     background-color: transparent;
@@ -188,16 +186,23 @@
 
             .button {
                 width: 1.8rem;
-                height: 0.4rem;
                 font-size: 0.18rem;
                 margin: 0 auto;
                 margin-top: 0.5rem;
-                line-height: 0.4rem;
+                height: 0.4rem;
                 border-radius: 0.05rem;
                 text-align: center;
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                background: #004f99;
+
+                /deep/ i {
+                    margin-right: 0.07rem;
+                }
+            }
+
+            .button:hover {
                 background: #004f99;
             }
         }
@@ -234,7 +239,6 @@
         border-radius: 0.04rem;
         border: none;
         color: @white;
-        padding: 0.08rem 0;
         text-align: center;
         font-size: 0.28rem;
         word-spacing: 0.2rem;
@@ -312,7 +316,6 @@
 
     .select-account {
         position: relative;
-
         /deep/input {
             border: none;
         }
@@ -333,7 +336,7 @@
         z-index: 3;
     }
 
-    .powered_by_label {
+    .copyright_label {
         position: absolute;
         color: white;
         font-size: @smallFont;
@@ -348,4 +351,8 @@
         background-color: transparent !important;
         font-size: @smallerFont;
     }
+}
+
+.disabled {
+    cursor: default !important;
 }

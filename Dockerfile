@@ -1,13 +1,13 @@
 FROM node:lts-alpine AS builder
 
 # Python and Make
-#ENV PYTHONUNBUFFERED=1
-#RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-#RUN python3 -m ensurepip
-#RUN pip3 install --no-cache --upgrade pip setuptools
-#RUN apk add g++ make python
-#RUN node --version
-#RUN apk add --update pkgconfig
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+RUN apk add g++ make python
+RUN node --version
+RUN apk add --update pkgconfig
 
 WORKDIR /app
 COPY . .

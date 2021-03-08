@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <div v-if="getCurrentStep() === 1">
-                   
+
                 </div>
                 <div v-if="getCurrentStep() === 2">
                     <div class="create-mnemonic-right">
