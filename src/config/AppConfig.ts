@@ -54,7 +54,7 @@ const defaultAppConfig: AppConfig = {
         { value: 'en-US', label: 'English' },
     ],
     marketServerUrl: 'http://app.nemcn.io',
-    articlesFeedUrl: 'https://cors.bridged.cc/https://cryptonews.com/news/feed',
+    articlesFeedUrl: 'https://cryptonews.com/news/feed',
 };
 const resolvedAppConfig: AppConfig = window['appConfig'] || defaultAppConfig;
 console.log('appConfig resolved!', resolvedAppConfig);
