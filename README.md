@@ -95,7 +95,6 @@ npm run dev
 ## Main changes
 * Changed news source (RSS channel) to cryptonews.com (https://cryptonews.com/news/feed) for more relevant news articles.
 * Altered UI elements (colors, text, icons) for a more appealing, consistent and coherent appearance.
-* Added the Jira Service Management widget for issue reporting.
 * Changed some terminology:
 	* Mosaics       -> Tokens
 	* Harvesting    -> Staking
