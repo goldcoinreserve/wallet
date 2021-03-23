@@ -62,6 +62,7 @@
             font-size: @bigFont;
             margin-bottom: 2%;
         }
+
         .text_red {
             color: @purpleDark;
             font-family: @symbolFontSemiBold;
@@ -93,28 +94,34 @@
                 font-size: @bigFont;
                 color: @grayLight;
                 font-family: @symbolFontSemiBold;
+
                 .check-container {
                     min-width: 0.25rem;
                     width: 0.25rem;
+
                     img {
                         display: none;
                         width: 15px;
                     }
                 }
+
                 &.done {
                     color: @purpleDark;
                     display: flex;
                     align-items: center;
+
                     .check-container img {
                         display: block;
                     }
                 }
+
                 &.active {
                     background: #004f99;
                     color: @white;
                 }
             }
         }
+
         .form {
             flex: 1;
             padding: 0 10%;

@@ -5,14 +5,14 @@
                 <div class="label">
                     {{ $t('about_app_release') }}
                 </div>
-                <div class="value">{{ $t('gcr_wallet') }} v{{ configs.package.version }}</div>
+                <div class="value">{{ configs.package.description }} v{{ configs.package.version }}</div>
             </div>
             <div class="form-row about-list">
                 <div class="label">
                     {{ $t('about_app_url') }}
                 </div>
                 <div class="value">
-                    <a :href="configs.package.homepage" target="_blank">{{ $t('homepage') }}</a>
+                    <a :href="configs.package.homepage" target="_blank">{{ configs.package.homepage }}</a>
                 </div>
             </div>
             <!-- <div class="form-row"></div> -->

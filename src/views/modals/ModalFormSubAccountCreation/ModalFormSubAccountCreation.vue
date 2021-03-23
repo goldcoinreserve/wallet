@@ -16,7 +16,7 @@
                                             <Option v-else value="child_account">
                                                 {{ $t('option_child_account') }}
                                             </Option>
-                                            <Option value="privatekey_account">
+                                            <Option v-if="!isLedger" value="privatekey_account">
                                                 {{ $t('option_privatekey_account') }}
                                             </Option>
                                         </Select>
@@ -84,7 +84,7 @@
             <ModalBackupReminder :visible="isModalBackupReminderShown" @close="closeBackupReminderModal" />
 
             <div slot="footer" class="modal-footer">
-                <FormProfileUnlock :focus="false" :is-loading="isCreatingAccount" @success="onAccountUnlocked" />
+                <FormProfileUnlock :focus="false" :is-loading="isCreatingAccount" :disabled="!isValidName" @success="onAccountUnlocked" />
             </div>
         </Modal>
     </div>

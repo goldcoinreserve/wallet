@@ -29,7 +29,6 @@
     }
 
     .welcome-head {
-        color: white;
         margin: 0 auto 0.4rem auto;
 
         .title {
@@ -66,6 +65,7 @@
 
             .img-box {
                 height: 1.44rem;
+
                 img {
                     margin-top: 0.57rem;
                     width: 0.58rem;
@@ -96,6 +96,11 @@
         }
     }
 
+    /deep/.ivu-tooltip {
+        width: 100%;
+        height: 100%;
+    }
+
     .bottom-text {
         margin-top: 0.4rem;
         height: 20px;
@@ -103,6 +108,7 @@
         font-weight: 400;
         color: @grayDark;
     }
+
     .bottom-link {
         color: @purple;
         cursor: pointer;
