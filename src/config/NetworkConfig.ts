@@ -38,10 +38,11 @@ export interface NetworkConfigurationDefaults {
     maxMosaicDivisibility: number;
     maxMessageSize: number;
     epochAdjustment: number;
+    totalChainImportance: number;
+    generationHash: string;
 }
 
 export interface NetworkConfig {
-    defaultNodeUrl: string;
     faucetUrl: string;
     nodes: NodeConfig[];
     defaultNetworkType: number;
@@ -49,11 +50,10 @@ export interface NetworkConfig {
     networkConfigurationDefaults: NetworkConfigurationDefaults;
 }
 
-const defaultNetworkConfig: NetworkConfig = {
-    explorerUrl: 'http://explorer.superhow.net/',
-    faucetUrl: 'http://faucet.superhow.net/',
-    defaultNetworkType: 96,
-    defaultNodeUrl: 'http://51.116.168.38:3000',
+const defaultTestnetNetworkConfig: NetworkConfig = {
+    explorerUrl: 'http://explorer.lared.superhow.net/',
+    faucetUrl: 'http://faucet.lared.superhow.net/',
+    defaultNetworkType: 152,
     networkConfigurationDefaults: {
         maxMosaicDivisibility: 6,
         namespaceGracePeriodDuration: 7776000,
@@ -68,15 +68,22 @@ const defaultNetworkConfig: NetworkConfig = {
         maxCosignedAccountsPerAccount: 25,
         maxMessageSize: 1024,
         maxMosaicAtomicUnits: 5000000000000000,
-        currencyMosaicId: '4131C5FD69F7A75C',
-        harvestingMosaicId: '6D601F79F46AF3D3',
+        currencyMosaicId: '067FAE202D44AC71',
+        harvestingMosaicId: '067FAE202D44AC71',
         defaultDynamicFeeMultiplier: 1000,
         epochAdjustment: 1573430400,
+        totalChainImportance: undefined,
+        generationHash: '9F5D58B772A55C1393ACE5802E4633C1FF3C04EA85195B0EBA4249F6E09ACB7A',
     },
     nodes: [
-        { friendlyName: 'lared-dual-1', roles: 2, url: 'http://51.116.168.38:3000' },
-        { friendlyName: 'lared-dual-2', roles: 2, url: 'http://51.116.171.30:3000' },
+        { friendlyName: 'GCR-DEVNET-dual-0', roles: 2, url: 'http://20.71.180.252:3000' },
+        { friendlyName: 'GCR-DEVNET-dual-1', roles: 2, url: 'http://51.136.62.187:3000' },
     ],
+};
+
+
+const defaultNetworkConfig: Record<number, NetworkConfig> = {
+    152: defaultTestnetNetworkConfig,
 };
 
 const resolvedNetworkConfig: NetworkConfig = window['networkConfig'] || defaultNetworkConfig;

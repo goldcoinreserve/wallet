@@ -71,6 +71,22 @@ export default class GenerateMnemonicTs extends Vue {
     private percent: number = 0;
 
     /**
+     * Hook called when the layout is mounted
+     * @return {void}
+     */
+    public mounted(): void {
+        document.addEventListener('mouseover', this.handleMousemove);
+    }
+
+    /**
+     * Hook called when the component is destroyed
+     * @return {void}
+     */
+    public destroyed(): void {
+        document.removeEventListener('mouseover', this.handleMousemove);
+    }
+
+    /**
      * Track and handle mouse move event
      * @param {Vue.Event} event
      * @return {void}
@@ -105,7 +121,6 @@ export default class GenerateMnemonicTs extends Vue {
             // update state
             await this.$store.dispatch('profile/SET_CURRENT_PROFILE', this.currentProfile);
             this.$store.dispatch('temporary/SET_MNEMONIC', seed);
-            this.$store.dispatch('notification/ADD_SUCCESS', this.$t('generate_entropy_increase_success'));
 
             // redirect
             return this.$router.push({ name: 'profiles.createProfile.showMnemonic' });

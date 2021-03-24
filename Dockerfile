@@ -1,4 +1,4 @@
-FROM node:lts-alpine AS builder
+FROM node:12 AS builder
 
 # Python and Make
 #ENV PYTHONUNBUFFERED=1

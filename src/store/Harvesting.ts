@@ -54,6 +54,13 @@ export enum HarvestingStatus {
     INPROGRESS_ACTIVATION = 'INPROGRESS_ACTIVATION',
     INPROGRESS_DEACTIVATION = 'INPROGRESS_DEACTIVATION',
 }
+
+export enum LedgerHarvestingMode {
+    DELEGATED_HARVESTING_START_OR_SWAP = 'DELEGATED_HARVESTING_START_OR_SWAP',
+    DELEGATED_HARVESTING_STOP = 'DELEGATED_HARVESTING_STOP',
+    MULTISIG_DELEGATED_HARVESTING_START_OR_SWAP = 'MULTISIG_DELEGATED_HARVESTING_START_OR_SWAP',
+    MULTISIG_DELEGATED_HARVESTING_STOP = 'MULTISIG_DELEGATED_HARVESTING_STOP',
+}
 interface HarvestingState {
     initialized: boolean;
     harvestedBlocks: HarvestedBlock[];
@@ -133,7 +140,7 @@ export default {
         async FETCH_STATUS({ commit, rootGetters }) {
             const currentSignerAccountInfo: AccountInfo = rootGetters['account/currentSignerAccountInfo'];
             // reset
-            commit('status', HarvestingStatus.INACTIVE);
+            let status: HarvestingStatus = HarvestingStatus.INACTIVE;
             if (!currentSignerAccountInfo) {
                 return;
             }
@@ -164,7 +171,6 @@ export default {
                 currentSignerAccountInfo.supplementalPublicKeys?.node &&
                 currentSignerAccountInfo.supplementalPublicKeys?.vrf;
 
-            let status: HarvestingStatus;
             if (allKeysLinked) {
                 status = accountUnlocked
                     ? HarvestingStatus.ACTIVE
@@ -299,6 +305,24 @@ export default {
             const harvestingService = new HarvestingService();
             const harvestingModel = harvestingService.getHarvestingModel(accountAddress);
             harvestingService.updateSelectedHarvestingNode(harvestingModel, selectedHarvestingNode);
+            commit('currentSignerHarvestingModel', harvestingModel);
+        },
+        UPDATE_REMOTE_ACCOUNT_PRIVATE_KEY(
+            { commit },
+            { accountAddress, encRemotePrivateKey }: { accountAddress: string; encRemotePrivateKey: string },
+        ) {
+            const harvestingService = new HarvestingService();
+            const harvestingModel = harvestingService.getHarvestingModel(accountAddress);
+            harvestingService.updateRemoteKey(harvestingModel, encRemotePrivateKey);
+            commit('currentSignerHarvestingModel', harvestingModel);
+        },
+        UPDATE_VRF_ACCOUNT_PRIVATE_KEY(
+            { commit },
+            { accountAddress, encVrfPrivateKey }: { accountAddress: string; encVrfPrivateKey: string },
+        ) {
+            const harvestingService = new HarvestingService();
+            const harvestingModel = harvestingService.getHarvestingModel(accountAddress);
+            harvestingService.updateVrfKey(harvestingModel, encVrfPrivateKey);
             commit('currentSignerHarvestingModel', harvestingModel);
         },
         /// end-region scoped actions

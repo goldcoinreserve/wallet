@@ -43,6 +43,7 @@ import { NetworkConfigurationModel } from '@/core/database/entities/NetworkConfi
             signers: 'account/signers',
             networkConfiguration: 'network/networkConfiguration',
             transactionFees: 'network/transactionFees',
+            isOfflineMode: 'network/isOfflineMode',
         }),
     },
 })
@@ -135,6 +136,8 @@ export class FormTransactionBase extends Vue {
 
     protected transactionFees: TransactionFees;
 
+    protected isOfflineMode: boolean;
+
     /**
      * Type the ValidationObserver refs
      * @type {{
@@ -191,6 +194,8 @@ export class FormTransactionBase extends Vue {
         if (!this.selectedSigner.address.equals(Address.createFromRawAddress(this.currentAccount.address))) {
             await this.$store.dispatch('account/SET_CURRENT_SIGNER', {
                 address: Address.createFromRawAddress(this.currentAccount.address),
+                reset: false,
+                unsubscribeWS: true,
             });
         }
     }
@@ -274,7 +279,11 @@ export class FormTransactionBase extends Vue {
      */
     public async onChangeSigner(address: string) {
         // this.currentSigner = PublicAccount.createFromPublicKey(publicKey, this.networkType)
-        await this.$store.dispatch('account/SET_CURRENT_SIGNER', { address: Address.createFromRawAddress(address) });
+        await this.$store.dispatch('account/SET_CURRENT_SIGNER', {
+            address: Address.createFromRawAddress(address),
+            reset: false,
+            unsubscribeWS: false,
+        });
     }
 
     protected getTransactionCommandMode(transactions: Transaction[]): TransactionCommandMode {
@@ -334,6 +343,11 @@ export class FormTransactionBase extends Vue {
         this.hasConfirmationModal = false;
         this.$emit('on-confirmation-success');
         // Reset form validation
+        this.resetFormValidation();
+    }
+
+    public reset(): void {
+        this.resetForm();
         this.resetFormValidation();
     }
 

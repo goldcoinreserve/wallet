@@ -78,6 +78,11 @@ export class FormMosaicDefinitionTransactionTs extends FormTransactionBase {
         default: false,
     })
     isAggregate: boolean;
+
+    @Prop({
+        default: false,
+    })
+    hideSave: boolean;
     /**
      * Form items
      * @var {Record<string, any>}
@@ -114,10 +119,11 @@ export class FormMosaicDefinitionTransactionTs extends FormTransactionBase {
 
         // - set default form values
         this.formItems.signerAddress = this.selectedSigner ? this.selectedSigner.address.plain() : this.currentAccount.address;
-        this.formItems.supplyMutable = false;
+        this.formItems.supplyMutable = this.isAggregate;
         this.formItems.restrictable = false;
         this.formItems.permanent = false;
         this.formItems.duration = 10000;
+        this.formItems.divisibility = 0;
 
         // - maxFee must be absolute
         this.formItems.maxFee = this.defaultFee;

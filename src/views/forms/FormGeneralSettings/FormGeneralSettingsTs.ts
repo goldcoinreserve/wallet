@@ -34,6 +34,8 @@ import MaxFeeSelector from '@/components/MaxFeeSelector/MaxFeeSelector.vue';
 // @ts-ignore
 import AccountSelectorField from '@/components/AccountSelectorField/AccountSelectorField.vue';
 // @ts-ignore
+import DeleteProfileButton from '@/components/DeleteProfileButton/DeleteProfileButton.vue';
+// @ts-ignore
 import ModalFormProfileUnlock from '@/views/modals/ModalFormProfileUnlock/ModalFormProfileUnlock.vue';
 // @ts-ignore
 import FormLabel from '@/components/FormLabel/FormLabel.vue';
@@ -53,6 +55,7 @@ import { AccountModel } from '@/core/database/entities/AccountModel';
         AccountSelectorField,
         ModalFormProfileUnlock,
         FormLabel,
+        DeleteProfileButton,
     },
     computed: {
         ...mapGetters({
@@ -142,13 +145,16 @@ export class FormGeneralSettingsTs extends Vue {
             // - add notification and emit
             this.$store.dispatch('notification/ADD_SUCCESS', NotificationType.SUCCESS_SETTINGS_UPDATED);
             this.$emit('submit', this.formItems);
+            this.$emit('close');
         } catch (e) {
             this.$store.dispatch('notification/ADD_ERROR', 'An error happened, please try again.');
             console.error(e);
         }
     }
 
-    public async logout() {
-        this.$emit('logout');
+    public async logout(): Promise<void> {
+        this.$emit('close');
+        await this.$store.dispatch('profile/LOG_OUT');
+        this.$router.push({ name: 'profiles.login' });
     }
 }

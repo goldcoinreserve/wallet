@@ -25,7 +25,7 @@
                             <Checkbox v-model="formItems.transferable">
                                 {{ $t('transmittable') }}
                             </Checkbox>
-                            <Checkbox v-model="formItems.supplyMutable">
+                            <Checkbox v-if="!isAggregate" v-model="formItems.supplyMutable">
                                 {{ $t('variable_supply') }}
                             </Checkbox>
                             <Checkbox v-model="formItems.restrictable">
@@ -35,9 +35,19 @@
                     </template>
                 </FormRow>
                 <RentalFee :rental-type="'mosaic'"></RentalFee>
-                <MaxFeeAndSubmit v-if="!isAggregate" v-model="formItems.maxFee" @button-clicked="handleSubmit(onSubmit)" />
-                <div v-else class="ml-2" style="text-align: right;">
-                    <button type="submit" class="save-button centered-button button-style inverted-button" @click="emitToAggregate">
+                <MaxFeeAndSubmit
+                    v-if="!isAggregate"
+                    v-model="formItems.maxFee"
+                    :disable-submit="currentAccount.isMultisig"
+                    @button-clicked="handleSubmit(onSubmit)"
+                />
+                <div v-else-if="!hideSave" class="ml-2" style="text-align: right;">
+                    <button
+                        type="submit"
+                        class="save-button centered-button button-style inverted-button"
+                        :disabled="currentAccount.isMultisig"
+                        @click="emitToAggregate"
+                    >
                         {{ $t('save') }}
                     </button>
                 </div>
@@ -62,12 +72,14 @@ export default class FormMosaicDefinitionTransaction extends FormMosaicDefinitio
 </script>
 
 <style lang="less" scoped>
-.checkboxes {
-    display: grid;
-    grid-auto-flow: column;
-    align-items: baseline;
-    color: #3d3d3d;
-}
+    .checkboxes {
+        display: grid;
+        grid-auto-flow: column;
+        grid-column-gap: 0.3rem;
+        align-items: baseline;
+        color: #004f99;
+        width: max-content;
+    }
 
 /deep/ .form-row {
     .form-row-inner-container {
@@ -78,5 +90,9 @@ export default class FormMosaicDefinitionTransaction extends FormMosaicDefinitio
 .save-button {
     text-align: center;
     width: 120px;
+}
+
+/deep/.multisig_ban_container {
+    padding-left: 0.7rem;
 }
 </style>

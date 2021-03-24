@@ -3,7 +3,120 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.13.8][v0.13.8] - 15-Jan-2020
+## [1.0.0][1.0.0] - 15-Mar-2021
+
+### Milestone: [catapult-server@v1.0.0.0](https://github.com/nemtech/catapult-server/releases/tag/v1.0.0.0)
+
+- Symbol mainnet launch release.
+
+## [0.15.1][0.15.1] - 13-Mar-2021
+
+### Milestone: [catapult-server@v1.0.0.0](https://github.com/nemtech/catapult-server/releases/tag/v1.0.0.0)
+
+- Pre Symbol launch release.
+- Updated experimental Symbol mainnet node with final Opt In balances
+
+## [0.15.0][0.15.0] - 11-Mar-2021
+
+### Milestone: [catapult-server@v0.10.0.8](https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.8)
+
+- Preview version for Symbol Mainnet.
+- Support read-only experimental Symbol Mainnet node for Symbol Opt-In accounts & balances preview (Valid Opt-In only).
+- Fixed various issues.
+
+:note: When using Leger to create / import a mainnet profile, please wait for the device to finish loading each selected account. Ledger devices cannot handle too many concurrent requests at a time.
+
+New Opt-In accounts created after this beta release will not be shown on Opt-In mnemonic importing. A new version after the Opt-In snapshot will be release includes all valid opt-in accounts.
+
+## [0.14.1][v0.14.1] - 18-Feb-2021
+
+### Milestone: [catapult-server@v0.10.0.7](https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.7)
+
+#### Added
+
+- Allow use of the wallet without a running node.
+- Added T&C to Ledger integration.
+- Added fees label in Aggregated transaction form.
+
+#### Changed
+
+- Removed default nodes on wallet initialization. Changed to randomly sync to working nodes.
+- Split reserved nodes by network types.
+- Removed unnecessary notifications.
+- Changed Node Key Link description.
+- UX improvement on profile creation.
+- Localized amount display.
+- Various UI improvements.
+- Language improvement.
+
+#### Fixed
+
+- Fixed fee selector in metadata transaction from.
+- Fixed Mosaic supply amount decimal part issue.
+- Fixed Mosaic shows as expired when the balance is 0 issue.
+- Fixed transfer tab becomes inactive after toggling from multisig account issue.
+- Fixed Ledger notification issue on MacOS.
+- Fixed cosignature transaction modal issue.
+- Fixed versions in Settings.
+- Fixed profile creation wizard issue.
+- Fixed estimated rental fees on transaction history list issue.
+- Fixed metadata cosign with single accounts issue.
+- Fixed Aggregated transaction save button malfunction issue.
+- Fixed alias validation issue.
+
+## [0.14.0][v0.14.0] - 08-Feb-2021
+
+### Milestone: [catapult-server@v0.10.0.6](https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.6)
+
+**This version only works with the latest testnet (0.10.0.6), it is not backward compatible.**
+
+##
+:warning: **This version(0.14.0) resets the previous user profile and locally stored data. The new HD path will generate different keys and addresses from an existing testnet mnemonic phrases. It is highly recommended to backup your test account profiles before using this version, especially the private keys of your seed(HD) accounts. Old testnet private keys can still be restored / re-imported as privateKey accounts in this new version.**
+##
+
+#### Added
+
+- Ledger integration support. The integration code work has been finished, it may not work until the Ledger integration app is available and fully tested.
+- Added address validation for cosignatories in multisig account creation.
+- Added backup warning after private key account imported into the profile.
+- Added core server error message transformer.
+
+#### Changed
+
+- Changed delegated harvesting process. Support persisting linked private keys locally for remote & local harvesting (node owners) purposes.
+- Improved vuex store, optimized rest API requests.
+- Changed HD seed account generation to use profile network type rather than node network type.
+- Language improvement in English and Japanese.
+- Removed Trezor button.
+- Balance panel UI improvement.
+- Transaction confirmation modal UI improvement.
+- Profile creation page UI improvement.
+- Aggregate transaction page UI improvement.
+- Changed importance score to show in a percentage format
+
+#### Fixed
+
+- Split HD wallet path between MainNet and TestNet for seed accounts generation [**Account Profile & Localstorage Reset**].
+- Fixed cosigners cannot receive partial transaction notification issue.
+- Fixed cosigners cannot cosign partial transaction issue.
+- Fixed WebSocket listener not closing properly after switching accounts/nodes issue.
+- Fixed metadata value showing with different encoding issues.
+- Fixed an issue that the application can be used without accepting T&C.
+- Fixed none readable hint texts issue.
+- Fixed delegated harvesting throws Failure_Core_Past_Deadline issue.
+- Fixed the issue that sends transaction button not disabled when the inner transaction is empty in the Aggregate transaction form.
+- Fixed aggrege transaction can be seen from different account issue.
+- Fixed multisig creation form accessibility issue.
+- Fixed fees selector in an aggregate transaction not always display issue.
+- Fixed maxFee selector warning overlaps on other warning component issue.
+- Fixed password is displayed as plain text in updated password form.
+- Fixed duplicated seed account issue.
+- Fixed modal confirmation checkbox and text-overflow issue.
+- Fixed selected signer gets reset issue in Aggregate transaction form.
+- Fixed mosaic fractional part display issue.
+- Other UI / UX fixes.
+
+## [0.13.8][v0.13.8] - 19-Jan-2021
 
 ### Milestone: [catapult-server@v0.10.0.5](https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.5)
 
@@ -14,7 +127,7 @@ The changelog format is based on [Keep a Changelog](https://keepachangelog.com/e
 - Updated reserved testnet node url (0.10.0.5)
 - Reset local storage for new network 0.10.0.5
 
-## [0.13.7][v0.13.7] - 14-Jan-2020
+## [0.13.7][v0.13.7] - 14-Jan-2021
 
 ### Milestone: [catapult-server@v0.10.0.5](https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.5)
 

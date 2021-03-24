@@ -28,6 +28,7 @@
 
 .wrap {
     height: 100vh;
+
     .alert {
         margin-left: 50%;
         left: -380px;
@@ -99,17 +100,21 @@
             color: white;
             justify-self: center;
         }
+
         .reset-icon:hover,
         .sure_button:hover {
             box-shadow: 0 0 10px @purpleLight;
         }
+
         .reset-icon {
             font-size: 25px;
+
             i {
                 height: 40px !important;
                 width: 40px !important;
                 background-color: transparent !important;
             }
+
             i:before {
                 right: 8px;
             }
@@ -171,14 +176,14 @@
         }
 
         /deep/.trigger-importqr {
-            color: @purpleDark;
+            color: white;
         }
 
         .debug-console-trigger-icon {
         }
 
         /deep/.ivu-icon {
-            color: @purpleDark;
+            color: #004f99;
         }
 
         /deep/.ivu-select-selection {
@@ -186,12 +191,14 @@
             border: none;
             box-shadow: none;
             height: auto !important;
+
             .ivu-select-placeholder,
             .ivu-select-selected-value {
                 font-size: @normalFont !important;
                 color: white;
                 padding: 0 !important;
             }
+
             i::before {
                 display: none;
             }
@@ -260,12 +267,12 @@
     .ivu-select-dropdown {
         z-index: 2147483647 !important;
     }
-
     //unused
     .node-input-container {
         width: 100%;
         margin-right: 20px;
     }
+
     .general_view {
         .footer {
             height: 100px;
@@ -274,7 +281,7 @@
             align-items: center;
 
             .footer-phrase {
-                color: @purpleDark;
+                color: white;
                 font-size: 14px;
                 margin-left: 10px;
             }

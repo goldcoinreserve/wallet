@@ -27,7 +27,7 @@ export class RemoteAccountService extends AccountService {
     /**
      * Derivation service
      */
-    private readonly derivationService = new DerivationService();
+    private derivationService: DerivationService;
 
     /**
      * Creates an instance of RemoteAccountService.
@@ -41,6 +41,7 @@ export class RemoteAccountService extends AccountService {
         private readonly accountRepository: AccountRepository,
     ) {
         super();
+        this.derivationService = new DerivationService(profile.networkType);
     }
 
     /**
@@ -70,6 +71,7 @@ export class RemoteAccountService extends AccountService {
             // @TODO: implement private key
             // @TODO: show error to the user
             case AccountType.KEYSTORE:
+            case AccountType.OPT_IN:
             case AccountType.PRIVATE_KEY:
                 throw new Error('remote account generation from Private Key is not supported');
             case AccountType.TREZOR:

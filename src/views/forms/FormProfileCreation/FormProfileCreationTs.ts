@@ -15,10 +15,9 @@
  */
 import { Component, Vue } from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
-import { Password } from 'symbol-sdk';
+import { NetworkType, Password } from 'symbol-sdk';
 // internal dependencies
 import { ValidationRuleset } from '@/core/validation/ValidationRuleset';
-import { NotificationType } from '@/core/utils/NotificationType';
 import { ProfileService } from '@/services/ProfileService';
 import { ProfileModel } from '@/core/database/entities/ProfileModel';
 // child components
@@ -31,6 +30,8 @@ import FormWrapper from '@/components/FormWrapper/FormWrapper.vue';
 import FormRow from '@/components/FormRow/FormRow.vue';
 import { NetworkTypeHelper } from '@/core/utils/NetworkTypeHelper';
 import { FilterHelpers } from '@/core/utils/FilterHelpers';
+import { AccountService } from '@/services/AccountService';
+import { networkConfig } from '@/config';
 
 /// end-region custom types
 
@@ -46,6 +47,7 @@ import { FilterHelpers } from '@/core/utils/FilterHelpers';
         ...mapGetters({
             generationHash: 'network/generationHash',
             currentProfile: 'profile/currentProfile',
+            isConnected: 'network/isConnected',
         }),
     },
 })
@@ -56,6 +58,22 @@ export class FormProfileCreationTs extends Vue {
      * @var {string}
      */
     public currentProfile: ProfileModel;
+    private isConnected: boolean;
+    /**
+     * Currently active profile
+     * @see {Store.Profile}
+     * @var {string}
+     */
+    public profileService: ProfileService;
+
+    isLedger = false;
+
+    created() {
+        this.profileService = new ProfileService();
+        this.formItems.networkType = NetworkType.MAIN_NET;
+        const { isLedger } = this.$route.meta;
+        this.isLedger = isLedger;
+    }
 
     /**
      * Currently active network type
@@ -65,10 +83,10 @@ export class FormProfileCreationTs extends Vue {
     public generationHash: string;
 
     /**
-     * Accounts repository
+     * Ledger Accounts repository
      * @var {ProfileService}
      */
-    public accountService = new ProfileService();
+    public ledgerAccountService = new AccountService();
 
     /**
      * Validation rules
@@ -106,10 +124,15 @@ export class FormProfileCreationTs extends Vue {
 
     /// region computed properties getter/setter
     get nextPage() {
+        this.connect(this.formItems.networkType);
         return this.$route.meta.nextPage;
     }
 
     /// end-region computed properties getter/setter
+
+    public connect(newNetworkType) {
+        this.$store.dispatch('network/CONNECT', { networkType: newNetworkType });
+    }
 
     /**
      * Submit action, validates form and creates account in storage
@@ -128,6 +151,47 @@ export class FormProfileCreationTs extends Vue {
     public resetValidations(): void {
         this.$refs && this.$refs.observer && this.$refs.observer.reset();
     }
+    /**
+     * Error notification handler
+     */
+    private errorNotificationHandler(error: any) {
+        if (error.message && error.message.includes('cannot open device with path')) {
+            error.errorCode = 'ledger_connected_other_app';
+        }
+        if (error.errorCode) {
+            switch (error.errorCode) {
+                case 'NoDevice':
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_no_device');
+                    return;
+                case 'ledger_not_supported_app':
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_not_supported_app');
+                    return;
+                case 'ledger_connected_other_app':
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_connected_other_app');
+                    return;
+                case 26628:
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_device_locked');
+                    return;
+                case 26368:
+                case 27904:
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_not_opened_app');
+                    return;
+                case 27264:
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_not_using_xym_app');
+                    return;
+                case 27013:
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_user_reject_request');
+                    return;
+            }
+        } else if (error.name) {
+            switch (error.name) {
+                case 'TransportOpenUserCancelled':
+                    this.$store.dispatch('notification/ADD_ERROR', 'ledger_no_device_selected');
+                    return;
+            }
+        }
+        this.$store.dispatch('notification/ADD_ERROR', this.$t('create_profile_failed', { reason: error.message || error }));
+    }
 
     /**
      * Persist created account and redirect to next step
@@ -136,27 +200,40 @@ export class FormProfileCreationTs extends Vue {
     private persistAccountAndContinue() {
         // -  password stored as hash (never plain.)
         const passwordHash = ProfileService.getPasswordHash(new Password(this.formItems.password));
-
-        const account: ProfileModel = {
+        const genHash = networkConfig[this.formItems.networkType].networkConfigurationDefaults.generationHash || this.generationHash;
+        const profile: ProfileModel = {
             profileName: this.formItems.profileName,
             accounts: [],
             seed: '',
             password: passwordHash,
             hint: this.formItems.hint,
             networkType: this.formItems.networkType,
-            generationHash: this.generationHash,
+            generationHash: genHash,
             termsAndConditionsApproved: false,
+            selectedNodeUrlToConnect: '',
         };
         // use repository for storage
-        this.accountService.saveProfile(account);
+        this.profileService.saveProfile(profile);
 
         // execute store actions
-        this.$store.dispatch('profile/SET_CURRENT_PROFILE', account);
+        this.$store.dispatch('profile/SET_CURRENT_PROFILE', profile);
         this.$store.dispatch('temporary/SET_PASSWORD', this.formItems.password);
-        this.$store.dispatch('notification/ADD_SUCCESS', NotificationType.OPERATION_SUCCESS);
-
-        // flush and continue
-        this.$router.push({ name: this.nextPage });
+        if (this.isLedger) {
+            // try for make sure device was connected for next step require it
+            const accountService = new AccountService();
+            accountService
+                .getLedgerAccounts(this.formItems.networkType, 1)
+                .then(() => {
+                    // flush and continue
+                    this.$router.push({ name: this.nextPage });
+                })
+                .catch((error) => {
+                    this.errorNotificationHandler(error);
+                });
+        } else {
+            // flush and continue
+            this.$router.push({ name: this.nextPage });
+        }
     }
 
     /**

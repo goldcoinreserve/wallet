@@ -62,6 +62,14 @@ export class TransactionCommand {
         this.tempTransactionSigner = new AccountTransactionSigner(this.tempAccount);
     }
 
+    public sign(service: TransactionAnnouncerService, account: TransactionSigner): Observable<Observable<SignedTransaction>[]> {
+        return this.resolveTransactions(account).pipe(
+            flatMap((transactions) => {
+                return of(transactions.map((t) => account.signTransaction(t, this.generationHash)));
+            }),
+        );
+    }
+
     public announce(service: TransactionAnnouncerService, account: TransactionSigner): Observable<Observable<BroadcastResult>[]> {
         return this.resolveTransactions(account).pipe(
             flatMap((transactions) => {
@@ -95,7 +103,7 @@ export class TransactionCommand {
         );
     }
 
-    private announceHashAndAggregateBonded(
+    public announceHashAndAggregateBonded(
         service: TransactionAnnouncerService,
         signedTransactions: Observable<SignedTransaction>[],
     ): Observable<BroadcastResult> {
@@ -177,7 +185,7 @@ export class TransactionCommand {
         }
     }
 
-    private calculateSuggestedMaxFee(transaction: Transaction): Transaction {
+    public calculateSuggestedMaxFee(transaction: Transaction): Transaction {
         const feeMultiplier =
             this.resolveFeeMultipler(transaction) < this.transactionFees.minFeeMultiplier
                 ? this.transactionFees.minFeeMultiplier

@@ -23,7 +23,7 @@ import { $eventBus } from '@/events';
 import { NotificationType } from '@/core/utils/NotificationType';
 import { ValidationRuleset } from '@/core/validation/ValidationRuleset';
 import { ProfileModel } from '@/core/database/entities/ProfileModel';
-import { AccountModel } from '@/core/database/entities/AccountModel';
+import { AccountModel, AccountType } from '@/core/database/entities/AccountModel';
 import { ProfileService } from '@/services/ProfileService';
 // child components
 // @ts-ignore
@@ -37,6 +37,8 @@ import { SettingService } from '@/services/SettingService';
 import { SettingsModel } from '@/core/database/entities/SettingsModel';
 import { AccountService } from '@/services/AccountService';
 import { NetworkTypeHelper } from '@/core/utils/NetworkTypeHelper';
+import { officialIcons } from '@/views/resources/Images';
+import _ from 'lodash';
 
 @Component({
     computed: {
@@ -70,7 +72,10 @@ export default class LoginPageTs extends Vue {
     private profilesClassifiedByNetworkType: {
         networkType: NetworkType;
         profiles: ProfileModel[];
-    }[];
+    }[] = [];
+
+    private performingLogin = false;
+
     /**
      * Currently active profile
      * @see {Store.Profile}
@@ -105,7 +110,7 @@ export default class LoginPageTs extends Vue {
      * All known profiles names
      */
     protected get profileNames(): string[] {
-        return this.profiles.map(({ profileName }) => profileName);
+        return this.profiles.map((p) => p.profileName);
     }
     /**
      * Hook called when the page is mounted
@@ -115,21 +120,17 @@ export default class LoginPageTs extends Vue {
         // filter out invalid profiles
         this.profiles = this.profileService.getProfiles().filter((p) => p.accounts.length > 0);
 
-        const reducer = (accumulator: { networkType: NetworkType; profiles: ProfileModel[] }[], currentValue: ProfileModel) => {
-            const currentAccumulator = accumulator.find((a) => a.networkType == currentValue.networkType);
-            if (currentAccumulator) {
-                currentAccumulator.profiles.push(currentValue);
-                return accumulator;
-            } else {
-                return [...accumulator, { networkType: currentValue.networkType, profiles: [currentValue] }];
-            }
-        };
-
-        this.profilesClassifiedByNetworkType = this.profiles.reduce(reducer, []);
         if (!this.profiles.length) {
             return;
         }
-        // accounts available, iterate to first profiles
+
+        const profilesGroupedByNetworkType = _.groupBy(this.profiles, (p) => p.networkType);
+        this.profilesClassifiedByNetworkType = Object.values(profilesGroupedByNetworkType).map((profiles) => ({
+            networkType: profiles[0].networkType,
+            profiles: profiles,
+        }));
+
+        // accounts available, iterate to first profile
         this.formItems.currentProfileName = this.profiles[0].profileName;
     }
 
@@ -158,6 +159,10 @@ export default class LoginPageTs extends Vue {
      * @return {void}
      */
     public async submit() {
+        if (this.performingLogin) {
+            return;
+        }
+
         if (!this.formItems.currentProfileName.length) {
             return this.$store.dispatch('notification/ADD_ERROR', NotificationType.PROFILE_NAME_INPUT_ERROR);
         }
@@ -166,8 +171,24 @@ export default class LoginPageTs extends Vue {
             return this.$store.dispatch('notification/ADD_ERROR', NotificationType.WRONG_PASSWORD_ERROR);
         }
 
+        this.performingLogin = true;
         // now compare password hashes
-        return this.processLogin();
+        return this.processLogin().finally(() => (this.performingLogin = false));
+    }
+
+    isLedgerProfile(): boolean {
+        const profileService = new ProfileService();
+        const currentProfileName = this.formItems.currentProfileName;
+        const profile = profileService.getProfileByName(currentProfileName);
+        const existingLedgerAccounts = profile.accounts.find((w) => {
+            if (this.accountService.getAccount(w).type == AccountType.fromDescriptor('Ledger')) {
+                return w;
+            }
+        });
+        if (existingLedgerAccounts !== ('' || undefined)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -186,7 +207,7 @@ export default class LoginPageTs extends Vue {
             }
 
             // profile exists, fetch data
-            const settings: SettingsModel = settingService.getProfileSettings(currentProfileName);
+            const settings: SettingsModel = settingService.getProfileSettings(currentProfileName, profile.networkType);
 
             const knownAccounts: AccountModel[] = this.accountService.getKnownAccounts(profile.accounts);
             if (knownAccounts.length == 0) {
@@ -202,7 +223,7 @@ export default class LoginPageTs extends Vue {
             }
 
             // if profile setup was not finalized, redirect
-            if (!profile.seed && profile.accounts.length == 0) {
+            if (!profile.seed && profile.accounts.length == 0 && !this.isLedgerProfile()) {
                 this.$store.dispatch('profile/SET_CURRENT_PROFILE', profile);
                 this.$store.dispatch('temporary/SET_PASSWORD', this.formItems.password);
                 this.$store.dispatch(
@@ -226,15 +247,20 @@ export default class LoginPageTs extends Vue {
 
             // LOGIN SUCCESS: update app state
             await this.$store.dispatch('profile/SET_CURRENT_PROFILE', profile);
-            this.$store.dispatch('network/CONNECT');
+            await this.$store.dispatch('network/CONNECT', { networkType: profile.networkType });
             this.$store.dispatch('account/SET_KNOWN_ACCOUNTS', profile.accounts);
             await this.$store.dispatch('account/SET_CURRENT_ACCOUNT', defaultAccount);
             this.$store.dispatch('diagnostic/ADD_DEBUG', 'Profile login successful with currentProfileName: ' + currentProfileName);
             $eventBus.$emit('onLogin', currentProfileName);
+            await this.$store.dispatch('network/REST_NETWORK_RENTAL_FEES');
             return this.$router.push({ name: 'dashboard' });
         } catch (e) {
             console.log('Unknown error trying to login', JSON.stringify(e));
             return this.$store.dispatch('notification/ADD_ERROR', `Unknown error trying to login: ${JSON.stringify(e)}`);
         }
+    }
+
+    public get offlineIcon() {
+        return officialIcons.sent;
     }
 }

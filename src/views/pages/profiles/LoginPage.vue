@@ -1,29 +1,32 @@
 <template>
     <div class="login-profile-wrapper">
         <VideoBackground class="video-background-section" :src="require('@/views/resources/videos/symbol_3d_rotate.mp4')">
+            <div class="switch-language-container">
+                <button class="trigger-accountlink" @click="$router.push('offlineTransaction')">
+                    <Icon type="ios-cloud-download-outline" class="navbar-icon white" />
+                    <span class="color white">{{ $t('go_to_offline_transactions') }}</span>
+                </button>
+                <img class="language_icon" :src="require('@/views/resources/img/login/language.svg')" alt="" />
+                <LanguageSelector />
+            </div>
             <ValidationObserver v-slot="{ handleSubmit }" slim>
                 <form onsubmit="event.preventDefault()">
-                    <div class="switch-language-container">
-                        <LanguageSelector />
-                    </div>
-                    
                     <div class="welcome-box">
-
                         <div class="banner-image">
-                            <span class="top-welcome-text"><!--{{ $t('welcome_to_symbol') }}--></span>
-                            <div class="bottom-welcome-text"><!--{{ $t('program_description_line1') }}--></div>
-                            <div class="bottom-welcome-text"><!--{{ $t('program_description_line2') }}--></div>
-                            <div class="bottom-welcome-text"><!--{{ $t('program_description_line3') }}--></div>
                         </div>
                         <div class="login-card radius">
-                            
                             <p class="login-title">
                                 {{ $t('login_to_symbol_account') }}
                             </p>
                             <p class="profile-name">
                                 {{ $t('profile_name') }}
                             </p>
-                            <ValidationProvider v-slot="{ errors }" :name="$t('profile_name')" :rules="`in:${profileNames}`" slim>
+                            <ValidationProvider
+                                v-slot="{ errors }"
+                                :name="$t('profile_name')"
+                                :rules="`profileExists:${profileNames}`"
+                                slim
+                            >
                                 <ErrorTooltip field-name="profile_name" :errors="errors">
                                     <input v-show="false" v-model="formItems.currentProfileName" />
 
@@ -31,6 +34,7 @@
                                         v-model="formItems.currentProfileName"
                                         placeholder=" "
                                         :class="['select-account', !profilesClassifiedByNetworkType ? 'un_click' : 'profile-name-input']"
+                                        :disabled="performingLogin"
                                     >
                                         <div class="auto-complete-sub-container scroll">
                                             <div class="tips-in-sub-container">
@@ -62,7 +66,7 @@
                             </p>
                             <ValidationProvider
                                 v-slot="{ errors }"
-                                mode="lazy"
+                                mode="passive"
                                 vid="password"
                                 :name="$t('password')"
                                 rules="required|min:8"
@@ -74,7 +78,7 @@
                                         :class="[!profilesClassifiedByNetworkType ? 'un_click' : '']"
                                         :placeholder="$t('please_enter_your_account_password')"
                                         type="password"
-                                        :disabled="!profilesClassifiedByNetworkType"
+                                        :disabled="!profilesClassifiedByNetworkType || performingLogin"
                                     />
                                 </ErrorTooltip>
                             </ValidationProvider>
@@ -85,24 +89,30 @@
                                 }}</span>
                                 <span
                                     class="pointer create-profile"
+                                    :class="{ disabled: performingLogin }"
                                     @click="
-                                        $router.push({
-                                            name: 'profiles.importProfile.importStrategy',
-                                        })
+                                        if (!performingLogin) {
+                                            $router.push({
+                                                name: 'profiles.importProfile.importStrategy',
+                                            });
+                                        }
                                     "
                                 >
                                     {{ $t('create_a_new_account') }}?
                                 </span>
                             </div>
-                            <div v-if="formItems.hasHint" class="hint">{{ $t('password_hint') }}: {{ getPasswordHint() }}</div>
-                            <button
+                            <div v-if="formItems.hasHint && !!getPasswordHint().length" class="hint">
+                                {{ $t('password_hint') }}: {{ getPasswordHint() }}
+                            </div>
+                            <Button
                                 v-if="profilesClassifiedByNetworkType"
                                 class="pointer button"
-                                type="submit"
+                                :loading="performingLogin"
+                                html-type="submit"
                                 @click.stop="handleSubmit(submit)"
                             >
                                 {{ $t('login') }}
-                            </button>
+                            </Button>
                             <div v-else class="pointer button" @click="$router.push({ name: 'profiles.importProfile.importStrategy' })">
                                 {{ $t('register') }}
                             </div>
@@ -111,7 +121,7 @@
                 </form>
             </ValidationObserver>
             <span class="version-panel">{{ $t('version') }}: {{ packageVersion }}</span>
-            <span class="powered_by_label">{{ $t('powered_by') }}</span>
+            <span class="copyright_label">{{ $t('copyright') }}</span>
         </VideoBackground>
     </div>
 </template>

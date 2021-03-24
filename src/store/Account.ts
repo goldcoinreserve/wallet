@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-import Vue from 'vue';
+import { AccountModel } from '@/core/database/entities/AccountModel';
+import { ProfileModel } from '@/core/database/entities/ProfileModel';
+import { AccountService } from '@/services/AccountService';
+import { MultisigService } from '@/services/MultisigService';
+import { ProfileService } from '@/services/ProfileService';
+import { RESTService } from '@/services/RESTService';
+import * as _ from 'lodash';
+import { of, Subscription } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import {
     AccountInfo,
     AccountNames,
@@ -24,18 +32,10 @@ import {
     PublicAccount,
     RepositoryFactory,
 } from 'symbol-sdk';
-import { of, Subscription } from 'rxjs';
+import Vue from 'vue';
 // internal dependencies
 import { $eventBus } from '../events';
-import { RESTService } from '@/services/RESTService';
 import { AwaitLock } from './AwaitLock';
-import { AccountModel } from '@/core/database/entities/AccountModel';
-import { MultisigService } from '@/services/MultisigService';
-import * as _ from 'lodash';
-import { ProfileModel } from '@/core/database/entities/ProfileModel';
-import { AccountService } from '@/services/AccountService';
-import { catchError, map } from 'rxjs/operators';
-import { ProfileService } from '@/services/ProfileService';
 /// region globals
 const Lock = AwaitLock.create();
 /// end-region globals
@@ -77,8 +77,12 @@ interface AccountState {
     subscriptions: Record<string, SubscriptionType[]>;
     currentRecipient: PublicAccount;
     currentAccountAliases: AccountNames[];
+    addressesList: Address[];
+    optInAddressesList: { address: Address; index: number }[];
     selectedAddressesToInteract: number[];
+    selectedAddressesOptInToInteract: number[];
     currentSignerAccountModel: AccountModel;
+    listener: IListener;
 }
 
 // account state initial definition
@@ -101,8 +105,12 @@ const accountState: AccountState = {
     subscriptions: {},
     currentRecipient: null,
     multisigAccountGraph: null,
+    addressesList: [],
+    optInAddressesList: [],
     selectedAddressesToInteract: [],
+    selectedAddressesOptInToInteract: [],
     currentSignerAccountModel: null,
+    listener: undefined,
 };
 
 /**
@@ -138,9 +146,13 @@ export default {
         currentRecipient: (state: AccountState) => state.currentRecipient,
         currentAccountAliases: (state: AccountState) => state.currentAccountAliases,
         multisigAccountGraph: (state: AccountState) => state.multisigAccountGraph,
+        addressesList: (state: AccountState) => state.addressesList,
+        optInAddressesList: (state: AccountState) => state.optInAddressesList,
         selectedAddressesToInteract: (state: AccountState) => state.selectedAddressesToInteract,
+        selectedAddressesOptInToInteract: (state: AccountState) => state.selectedAddressesOptInToInteract,
         currentSignerAccountModel: (state: AccountState) =>
             state.knownAccounts.find((a) => a.address === state.currentSignerAddress.plain()),
+        listener: (state: AccountState) => state.listener,
     },
     mutations: {
         setInitialized: (state: AccountState, initialized: boolean) => {
@@ -215,10 +227,21 @@ export default {
             // update state
             Vue.set(state.subscriptions, address, newSubscriptions);
         },
+        addressesList: (state: AccountState, addressesList: Address[]) => {
+            state.addressesList = addressesList;
+        },
+        optInAddressesList: (state: AccountState, optInAddressesList: { address: Address; index: number }[]) => {
+            state.optInAddressesList = optInAddressesList;
+        },
         addToSelectedAddressesToInteract: (state: AccountState, pathNumber: number) => {
             const selectedAccounts = [...state.selectedAddressesToInteract];
             selectedAccounts.push(pathNumber);
             state.selectedAddressesToInteract = selectedAccounts;
+        },
+        addToSelectedAddressesOptInToInteract: (state: AccountState, pathNumber: number) => {
+            const selectedAccounts = [...state.selectedAddressesOptInToInteract];
+            selectedAccounts.push(pathNumber);
+            state.selectedAddressesOptInToInteract = selectedAccounts;
         },
         removeFromSelectedAddressesToInteract: (state: AccountState, pathNumber: number) => {
             const selectedAccounts = [...state.selectedAddressesToInteract];
@@ -226,6 +249,25 @@ export default {
             selectedAccounts.splice(indexToDelete, 1);
             state.selectedAddressesToInteract = selectedAccounts;
         },
+        removeFromSelectedAddressesOptInToInteract: (state: AccountState, pathNumber: number) => {
+            const selectedAccounts = [...state.selectedAddressesOptInToInteract];
+            const indexToDelete = selectedAccounts.indexOf(pathNumber);
+            selectedAccounts.splice(indexToDelete, 1);
+            state.selectedAddressesOptInToInteract = selectedAccounts;
+        },
+        resetAddressesList: (state: AccountState) => {
+            state.addressesList = [];
+        },
+        resetOptInAddressesList: (state: AccountState) => {
+            state.optInAddressesList = [];
+        },
+        resetSelectedAddressesToInteract: (state: AccountState) => {
+            state.selectedAddressesToInteract = [];
+        },
+        resetSelectedAddressesOptInToInteract: (state: AccountState) => {
+            state.selectedAddressesOptInToInteract = [];
+        },
+        listener: (state: AccountState, listener: IListener) => Vue.set(state, 'listener', listener),
     },
     actions: {
         /**
@@ -276,6 +318,8 @@ export default {
             // reset current signer
             await dispatch('SET_CURRENT_SIGNER', {
                 address: currentAccountAddress,
+                reset: true,
+                unsubscribeWS: true,
             });
             //reset current account alias
             await dispatch('LOAD_CURRENT_ACCOUNT_ALIASES', currentAccountAddress);
@@ -292,7 +336,10 @@ export default {
             commit('currentAccountAliases', []);
         },
 
-        async SET_CURRENT_SIGNER({ commit, dispatch, getters, rootGetters }, { address }: { address: Address }) {
+        async SET_CURRENT_SIGNER(
+            { commit, dispatch, getters, rootGetters },
+            { address, reset = true, unsubscribeWS = true }: { address: Address; reset: boolean; unsubscribeWS: boolean },
+        ) {
             if (!address) {
                 throw new Error('Address must be provided when calling account/SET_CURRENT_SIGNER!');
             }
@@ -310,8 +357,10 @@ export default {
                 root: true,
             });
 
-            dispatch('transaction/RESET_TRANSACTIONS', {}, { root: true });
-            dispatch('restriction/RESET_ACCOUNT_RESTRICTIONS', {}, { root: true });
+            if (reset) {
+                dispatch('transaction/RESET_TRANSACTIONS', {}, { root: true });
+                dispatch('restriction/RESET_ACCOUNT_RESTRICTIONS', {}, { root: true });
+            }
 
             const currentAccountAddress = Address.createFromRawAddress(currentAccount.address);
             const knownAccounts = new AccountService().getKnownAccounts(currentProfile.accounts);
@@ -329,15 +378,53 @@ export default {
             dispatch('harvesting/SET_CURRENT_SIGNER_HARVESTING_MODEL', currentSignerAddress.plain(), { root: true });
 
             // open / close websocket connections
-            if (previousSignerAddress) {
-                await dispatch('UNSUBSCRIBE', previousSignerAddress);
+
+            if (reset) {
+                await dispatch('LOAD_ACCOUNT_INFO');
+                dispatch('namespace/LOAD_NAMESPACES', {}, { root: true });
+                dispatch('mosaic/LOAD_MOSAICS', {}, { root: true });
+            } else {
+                const currentSigner = getters.signers.find((s) => s.address.equals(currentSignerAddress));
+                if (currentSigner) {
+                    commit('currentSigner', currentSigner);
+                }
+                const signerModel = knownAccounts.find((w) => w.address === currentSignerAddress.plain());
+                if (signerModel !== undefined) {
+                    commit('currentSignerPublicKey', signerModel.publicKey);
+                } else {
+                    if (getters.currentSignerAccountInfo) {
+                        commit('currentSignerPublicKey', getters.currentSignerAccountInfo.publicKey);
+                    }
+                }
+                // we need to set the currentSignerMultisigInfo to be able to calculate the fee(based on requiredCosignatures)
+                const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
+                if (!repositoryFactory) {
+                    return;
+                }
+                const multisigAccountsInfo: MultisigAccountInfo[] = await repositoryFactory
+                    .createMultisigRepository()
+                    .getMultisigAccountGraphInfo(currentAccountAddress)
+                    .pipe(
+                        map((g) => {
+                            // sorted array to be represented in multisig tree
+                            commit('multisigAccountGraph', g.multisigEntries);
+                            return MultisigService.getMultisigInfoFromMultisigGraphInfo(g);
+                        }),
+                        catchError(() => {
+                            return of([]);
+                        }),
+                    )
+                    .toPromise();
+                const currentSignerMultisigInfo = multisigAccountsInfo.find((m) => m.accountAddress.equals(currentSignerAddress));
+                commit('currentSignerMultisigInfo', currentSignerMultisigInfo);
             }
-            await dispatch('SUBSCRIBE', currentSignerAddress);
 
-            await dispatch('LOAD_ACCOUNT_INFO');
-
-            dispatch('namespace/LOAD_NAMESPACES', {}, { root: true });
-            dispatch('mosaic/LOAD_MOSAICS', {}, { root: true });
+            if (unsubscribeWS) {
+                if (previousSignerAddress) {
+                    await dispatch('UNSUBSCRIBE', previousSignerAddress);
+                }
+                await dispatch('SUBSCRIBE', currentSignerAddress);
+            }
         },
 
         async NETWORK_CHANGED({ dispatch }) {
@@ -363,6 +450,9 @@ export default {
                     commit('currentRecipient', AccountModel.getObjects(knownRecipient).publicAccount);
                 } else {
                     const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
+                    if (!repositoryFactory) {
+                        return;
+                    }
                     const getAccountsInfoPromise = repositoryFactory
                         .createAccountRepository()
                         .getAccountInfo(recipientAddress)
@@ -379,6 +469,9 @@ export default {
 
         async LOAD_CURRENT_ACCOUNT_ALIASES({ commit, rootGetters }, currentAccountAddress: Address) {
             const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
+            if (!repositoryFactory) {
+                return;
+            }
             const aliasPromise = repositoryFactory
                 .createNamespaceRepository()
                 .getAccountsNames([currentAccountAddress])
@@ -407,7 +500,19 @@ export default {
                 return;
             }
 
-            const getMultisigAccountGraphInfoPromise = repositoryFactory
+            // REMOTE CALL
+            if (!repositoryFactory) {
+                return;
+            }
+            const aliasPromise = repositoryFactory
+                .createNamespaceRepository()
+                .getAccountsNames([currentAccountAddress])
+                .toPromise()
+                .catch(() => commit('currentAccountAliases', []));
+            const aliases = await aliasPromise;
+            commit('currentAccountAliases', aliases);
+
+            const multisigAccountsInfo: MultisigAccountInfo[] = await repositoryFactory
                 .createMultisigRepository()
                 .getMultisigAccountGraphInfo(currentAccountAddress)
                 .pipe(
@@ -421,17 +526,6 @@ export default {
                     }),
                 )
                 .toPromise();
-
-            // REMOTE CALL
-            const aliasPromise = repositoryFactory
-                .createNamespaceRepository()
-                .getAccountsNames([currentAccountAddress])
-                .toPromise()
-                .catch(() => commit('currentAccountAliases', []));
-            const aliases = await aliasPromise;
-            commit('currentAccountAliases', aliases);
-
-            const multisigAccountsInfo: MultisigAccountInfo[] = await getMultisigAccountGraphInfoPromise;
             const currentAccountMultisigInfo = multisigAccountsInfo.find((m) => m.accountAddress.equals(currentAccountAddress));
             const currentSignerMultisigInfo = multisigAccountsInfo.find((m) => m.accountAddress.equals(currentSignerAddress));
             // update multisig flag in currentAccount
@@ -555,7 +649,7 @@ export default {
          * Websocket API
          */
         // Subscribe to latest account transactions.
-        async SUBSCRIBE({ commit, dispatch, rootGetters }, address: Address) {
+        async SUBSCRIBE({ commit, dispatch, getters, rootGetters }, address: Address) {
             if (!address) {
                 return;
             }
@@ -563,11 +657,22 @@ export default {
             const plainAddress = address.plain();
 
             // use RESTService to open websocket channel subscriptions
+            let listener = getters['listener'];
+            if (listener && listener.isOpen()) {
+                await listener.close();
+            }
             const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
+            if (!repositoryFactory) {
+                return;
+            }
+            listener = repositoryFactory.createListener();
+            commit('listener', listener);
+
             const subscriptions: SubscriptionType = await RESTService.subscribeTransactionChannels(
                 { commit, dispatch },
-                repositoryFactory,
+                listener,
                 plainAddress,
+                getters.currentAccountMultisigInfo && !!getters.currentAccountMultisigInfo.multisigAddresses.length ? true : false,
             );
             const payload: { address: string; subscriptions: SubscriptionType } = { address: plainAddress, subscriptions };
             // update state of listeners & subscriptions
@@ -587,11 +692,13 @@ export default {
 
             // close subscriptions
             for (const subscriptionType of subscriptionTypes) {
-                const { listener, subscriptions } = subscriptionType;
+                const { subscriptions, listener } = subscriptionType;
                 for (const subscription of subscriptions) {
                     subscription.unsubscribe();
                 }
-                listener.close();
+                if (listener && listener.isOpen()) {
+                    await listener.close();
+                }
             }
 
             // update state of listeners & subscriptions
@@ -600,6 +707,20 @@ export default {
                 subscriptions: null,
             };
             commit('updateSubscriptions', payload);
+        },
+
+        async GET_ACCOUNT_INFO({ rootGetters }, address: Address | null): Promise<AccountInfo | null> {
+            try {
+                const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
+                if (!repositoryFactory) {
+                    return;
+                }
+                const acountInfo = await repositoryFactory.createAccountRepository().getAccountInfo(address).toPromise();
+
+                return acountInfo;
+            } catch (e) {
+                return null;
+            }
         },
     },
 };

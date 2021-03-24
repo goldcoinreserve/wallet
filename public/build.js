@@ -6,6 +6,8 @@ const { app, BrowserWindow, shell, globalShortcut, Menu, ipcMain } = require('el
 const electron = require('electron')
 const name = electron.app.getName()
 const electronLocalshortcut = require('electron-localshortcut');
+const contextMenu = require('electron-context-menu');
+contextMenu({});
 
 // Set the path of the folder where the persisted data is stored
 electron.app.setPath('userData', path.join(electron.app.getPath('home'), '.symbol-desktop-wallet'))
@@ -224,6 +226,11 @@ function initialize() {
         height: height,
         autoHideMenuBar: false,
         resizable: true,
+        webPreferences: {
+          nodeIntegration: false,
+          enableRemoteModule: false,
+          preload: path.resolve(__dirname, 'preload.js')
+        }
       })
     } else {
       height = parseInt((1080 * size.width) / 1920 + 30)
@@ -232,6 +239,11 @@ function initialize() {
         height: height - 50,
         autoHideMenuBar: false,
         resizable: true,
+        webPreferences: {
+          nodeIntegration: false,
+          enableRemoteModule: false,
+          preload: path.resolve(__dirname, 'preload.js')
+        }
       })
     }
     mainWindow.loadFile(loadUrlPath)
@@ -263,6 +275,8 @@ function initialize() {
       titleBarStyle: 'hiddenInset',
       webPreferences: {
         nodeIntegration: false,
+        enableRemoteModule: false,
+        preload: path.resolve(__dirname, 'preload.js')
       },
       resizable: true,
     }
