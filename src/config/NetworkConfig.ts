@@ -51,8 +51,8 @@ export interface NetworkConfig {
 }
 
 const defaultTestnetNetworkConfig: NetworkConfig = {
-    explorerUrl: 'http://explorer.lared.superhow.net/',
-    faucetUrl: 'http://faucet.lared.superhow.net/',
+    explorerUrl: 'http://explorer.gcr.superhow.net/',
+    faucetUrl: 'http://faucet.gcr.superhow.net/',
     defaultNetworkType: 152,
     networkConfigurationDefaults: {
         maxMosaicDivisibility: 6,
@@ -64,20 +64,20 @@ const defaultTestnetNetworkConfig: NetworkConfig = {
         maxMosaicDuration: 315360000,
         minNamespaceDuration: 2592000,
         maxNamespaceDuration: 63072000,
-        maxTransactionsPerAggregate: 250,
+        maxTransactionsPerAggregate: 1000,
         maxCosignedAccountsPerAccount: 25,
         maxMessageSize: 1024,
         maxMosaicAtomicUnits: 5000000000000000,
-        currencyMosaicId: '067FAE202D44AC71',
-        harvestingMosaicId: '067FAE202D44AC71',
+        currencyMosaicId: '41AB747DEF2694ED',
+        harvestingMosaicId: '41AB747DEF2694ED',
         defaultDynamicFeeMultiplier: 1000,
         epochAdjustment: 1573430400,
-        totalChainImportance: undefined,
-        generationHash: '9F5D58B772A55C1393ACE5802E4633C1FF3C04EA85195B0EBA4249F6E09ACB7A',
+        totalChainImportance: 420000000000000,
+        generationHash: 'DD0BBDAB10F80DA3487DE811D6707639AFA0FBC4799C9FAD1CB928B2BDF5F3E8',
     },
     nodes: [
-        { friendlyName: 'GCR-DEVNET-dual-0', roles: 2, url: 'http://20.71.180.252:3000' },
-        { friendlyName: 'GCR-DEVNET-dual-1', roles: 2, url: 'http://51.136.62.187:3000' },
+        { friendlyName: 'GCR-DEVNET-dual-0', roles: 2, url: 'http://20.52.130.19:3000' },
+        { friendlyName: 'GCR-DEVNET-dual-1', roles: 2, url: 'http://20.52.131.211:3000' },
     ],
 };
 
