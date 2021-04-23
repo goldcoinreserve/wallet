@@ -50,7 +50,7 @@ export interface NetworkConfig {
     networkConfigurationDefaults: NetworkConfigurationDefaults;
 }
 
-const defaultTestnetNetworkConfig: NetworkConfig = {
+export const defaultTestnetNetworkConfig: NetworkConfig = {
     explorerUrl: 'http://explorer.gcr.superhow.net/',
     faucetUrl: 'http://faucet.gcr.superhow.net/',
     defaultNetworkType: 152,
