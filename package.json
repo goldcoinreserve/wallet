@@ -1,11 +1,11 @@
 {
   "name": "gcr-desktop-wallet",
   "description": "GCR Wallet",
-  "homepage": "https://github.com/nemgrouplimited/symbol-desktop-wallet",
+  "homepage": "https://bitbucket.org/superhow/gcr-wallet/",
   "version": "1.0.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nemgrouplimited/symbol-desktop-wallet.git"
+    "url": "https://bitbucket.org/superhow/gcr-wallet/"
   },
   "license": "Apache-2.0",
   "scripts": {
