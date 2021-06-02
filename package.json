@@ -149,7 +149,7 @@
   },
   "main": "./public/build.js",
   "build": {
-    "appId": "io.nem.symbol.desktop-wallet",
+    "appId": "io.gcr.gcr.desktop-wallet",
     "extends": null,
     "copyright": "Copyright © 2019-2021 NEM",
     "productName": "Symbol Wallet",

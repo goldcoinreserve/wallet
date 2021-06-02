@@ -7,11 +7,11 @@
     <key>CFBundleDisplayName</key>
     <string>GCR Wallet</string>
     <key>CFBundleExecutable</key>
-    <string>symbol-desktop-wallet</string>
+    <string>gcr-desktop-wallet</string>
     <key>CFBundleIconFile</key>
     <string>electron.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>io.nem.symbol.desktop-wallet</string>
+    <string>io.gcr.gcr.desktop-wallet</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

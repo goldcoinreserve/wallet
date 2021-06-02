@@ -10,7 +10,7 @@ const contextMenu = require('electron-context-menu');
 contextMenu({});
 
 // Set the path of the folder where the persisted data is stored
-electron.app.setPath('userData', path.join(electron.app.getPath('home'), '.symbol-desktop-wallet'))
+electron.app.setPath('userData', path.join(electron.app.getPath('home'), '.gcr-wallet'))
 
 const iconUrlPath =
   process.platform === 'darwin' ? './dist/assets/logo.png' : `file://${__dirname}/../dist/assets/logo.png`
@@ -98,13 +98,13 @@ const template = [
       {
         label: 'Learn More',
         click: function () {
-          electron.shell.openExternal('https://github.com/nemgrouplimited/symbol-desktop-wallet')
+            electron.shell.openExternal('https://github.com/goldcoinreserve/wallet')
         },
       },
       {
-        label: 'About NEM',
+        label: 'About GCR',
         click: function () {
-          electron.shell.openExternal('https://nem.io/')
+            electron.shell.openExternal('https://goldcoinreserve.io/')
         },
       },
     ],
