@@ -541,7 +541,7 @@
   "hd_account_path_error": "Address path error",
   "hidden_accounts": "Hidden Accounts",
   "hide_account": "Hide Account",
-  "homepage": "https://bitbucket.org/superhow/gcr-wallet/src/main/",
+  "homepage": "https://github.com/goldcoinreserve/wallet",
   "id": "#",
   "if_you_need_to_backup_your_mnemonics_again_you_can": "If you need to backup your mnemonics again, you can find them in 'Accounts - My Accounts - Backup Profile'.",
   "illegal_public_key_error": "This public key is invalid",

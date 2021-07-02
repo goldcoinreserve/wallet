@@ -25,7 +25,7 @@ const fakeNodeInfo = new NodeInfo(
     'Some Public Key',
     'Some Gen Hash',
     1234,
-    NetworkType.TEST_NET,
+    NetworkType.MAIN_NET,
     4567,
     [RoleType.ApiNode],
     'Some Host',
@@ -47,7 +47,7 @@ const repositoryFactory = instance(mockRepoFactory);
 
 describe('services/NodeService', () => {
     test('getNodes', async () => {
-        const peers = await nodeService.getNodes(repositoryFactory, realUrl, NetworkType.TEST_NET).pipe(toArray()).toPromise();
+        const peers = await nodeService.getNodes(repositoryFactory, realUrl, NetworkType.MAIN_NET).pipe(toArray()).toPromise();
         console.log(JSON.stringify(peers, null, 2));
     });
 });

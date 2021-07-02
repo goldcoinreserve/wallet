@@ -43,7 +43,7 @@ export class SettingsModelStorage extends VersionedObjectStorage<Record<string, 
                         profiles.map((name: string) => {
                             modified[name] = {
                                 ...modified[name],
-                                explorerUrl: networkConfig[NetworkType.TEST_NET].explorerUrl,
+                                explorerUrl: networkConfig[NetworkType.MAIN_NET].explorerUrl,
                             };
                         });
 
@@ -60,8 +60,8 @@ export class SettingsModelStorage extends VersionedObjectStorage<Record<string, 
                         settings.map((name: string) => {
                             modified[name] = {
                                 ...modified[name],
-                                explorerUrl: networkConfig[NetworkType.TEST_NET].explorerUrl,
-                                faucetUrl: networkConfig[NetworkType.TEST_NET].faucetUrl,
+                                explorerUrl: networkConfig[NetworkType.MAIN_NET].explorerUrl,
+                                faucetUrl: networkConfig[NetworkType.MAIN_NET].faucetUrl,
                             };
                         });
 

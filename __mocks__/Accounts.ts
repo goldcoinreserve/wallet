@@ -67,7 +67,7 @@ const TEST_ACCOUNTS = {
         privateKey: '27002B109810E4C25E8E6AE964FAF129CC3BFD1A95CB99062E0205060041D0C9',
     },
     remoteTestnet: {
-        networkType: NetworkType.TEST_NET,
+        networkType: NetworkType.MAIN_NET,
         privateKey: '803040D4A33983C4B233C6C2054A24B9C655E8CAC6C06AECCED56B8FE424FF2B',
     },
     remoteMijin: {

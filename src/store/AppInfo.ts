@@ -53,7 +53,7 @@ const appInfoState: AppInfoState = {
     hasControlsDisabled: false,
     controlsDisabledMessage: '',
     faucetUrl: undefined,
-    settings: settingService.getProfileSettings(ANON_PROFILE_NAME, NetworkType.TEST_NET), // TODO how to fix here? why static?
+    settings: settingService.getProfileSettings(ANON_PROFILE_NAME, NetworkType.MAIN_NET), // TODO how to fix here? why static?
 };
 
 export default {
@@ -89,7 +89,7 @@ export default {
         setLoadingOverlayMessage: (state: AppInfoState, message: string) => Vue.set(state, 'loadingOverlayMessage', message),
         setLoadingDisableCloseButton: (state: AppInfoState, bool: boolean) => Vue.set(state, 'loadingDisableCloseButton', bool),
         faucetUrl: (state: AppInfoState, faucetUrl) => {
-            Vue.set(state, 'faucetUrl', faucetUrl || networkConfig[NetworkType.TEST_NET].faucetUrl);
+            Vue.set(state, 'faucetUrl', faucetUrl || networkConfig[NetworkType.MAIN_NET].faucetUrl);
         },
     },
     actions: {

@@ -39,7 +39,7 @@ const accountInfos = [
         accountType: sdkAccountType.Main,
     } as AccountInfo,
     {
-        address: PublicAccount.createFromPublicKey('FA0939C5F11FC89A8EB997329C64AC785CDD23AE9D73C3E060D3B5FF0BABC2A4', NetworkType.TEST_NET)
+        address: PublicAccount.createFromPublicKey('FA0939C5F11FC89A8EB997329C64AC785CDD23AE9D73C3E060D3B5FF0BABC2A4', NetworkType.MAIN_NET)
             .address,
         accountType: sdkAccountType.Remote_Unlinked,
     } as AccountInfo,

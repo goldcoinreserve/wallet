@@ -56,8 +56,8 @@ const expectedAccounts_Test = Object.values(expectedPrivateKeys_Test).map((key) 
 const generatedAccounts = new AccountService().generateAccountsFromMnemonic(mnemonic, NetworkType.MAIN_NET, 2);
 const generatedAddresses = new AccountService().getAddressesFromMnemonic(mnemonic, NetworkType.MAIN_NET, 2);
 
-const generatedAccounts_test = new AccountService().generateAccountsFromMnemonic(mnemonic, NetworkType.TEST_NET, 2);
-const generatedAddresses_test = new AccountService().getAddressesFromMnemonic(mnemonic, NetworkType.TEST_NET, 2);
+const generatedAccounts_test = new AccountService().generateAccountsFromMnemonic(mnemonic, NetworkType.MAIN_NET, 2);
+const generatedAddresses_test = new AccountService().getAddressesFromMnemonic(mnemonic, NetworkType.MAIN_NET, 2);
 
 describe('services/AccountService_Main', () => {
     describe('generateAccountsFromMnemonic() should', () => {
@@ -169,7 +169,7 @@ describe('services/AccountService_Test', () => {
         test('generate correct account given mnemonic and paths', () => {
             const accounts = new AccountService().generateAccountsFromPaths(
                 mnemonic,
-                NetworkType.TEST_NET,
+                NetworkType.MAIN_NET,
                 Object.values(standardPaths_Test).slice(0, 1),
             );
 
@@ -198,7 +198,7 @@ describe('services/AccountService_Test', () => {
 
     describe('getAccountByPath() should', () => {
         test('generate correct account given mnemonic and path', () => {
-            const account_3 = new AccountService().getAccountByPath(mnemonic, NetworkType.TEST_NET, standardPaths_Test[3]);
+            const account_3 = new AccountService().getAccountByPath(mnemonic, NetworkType.MAIN_NET, standardPaths_Test[3]);
 
             expect(account_3.privateKey).toBe(expectedAccounts_Test[2].privateKey);
         });

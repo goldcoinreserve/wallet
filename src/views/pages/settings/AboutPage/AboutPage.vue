@@ -35,7 +35,7 @@
                     {{ $t('about_network_type') }}
                 </div>
                 <div class="value">
-                    <span v-if="isNetworkType(types.MAIN_NET)">MAINNET</span>
+                    <span v-if="isNetworkType(types.MAIN_NET)">TESTNET</span>
                     <span v-else-if="isNetworkType(types.TEST_NET)">TESTNET</span>
                     <span v-else-if="isNetworkType(types.MIJIN)">MIJIN</span>
                     <span v-else-if="isNetworkType(types.MIJIN_TEST)">MIJIN_TEST</span>
@@ -97,75 +97,77 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { NetworkType } from 'symbol-sdk';
-// child components
-import FormWrapper from '@/components/FormWrapper/FormWrapper.vue';
-import FormLabel from '@/components/FormLabel/FormLabel.vue';
-// configuration
-import { appConfig } from '@/config';
-import { feesConfig } from '@/config';
-import { networkConfig } from '@/config';
-import packageConfig from '@/../package.json';
-import packageLockConfig from '@/../package-lock.json';
-import { mapGetters } from 'vuex';
-import { NetworkModel } from '@/core/database/entities/NetworkModel';
-import { URLInfo } from '@/core/utils/URLInfo';
+    import { Component, Vue } from 'vue-property-decorator';
+    import { NetworkType } from 'symbol-sdk';
+    // child components
+    import FormWrapper from '@/components/FormWrapper/FormWrapper.vue';
+    import FormLabel from '@/components/FormLabel/FormLabel.vue';
+    // configuration
+    import { appConfig } from '@/config';
+    import { feesConfig } from '@/config';
+    import { networkConfig } from '@/config';
+    import packageConfig from '@/../package.json';
+    import packageLockConfig from '@/../package-lock.json';
+    import { mapGetters } from 'vuex';
+    import { NetworkModel } from '@/core/database/entities/NetworkModel';
+    import { URLInfo } from '@/core/utils/URLInfo';
 
-@Component({
-    components: {
-        FormWrapper,
-        FormLabel,
-    },
-    computed: {
-        ...mapGetters({
-            networkModel: 'network/networkModel',
-            networkType: 'network/networkType',
-            currentPeer: 'network/currentPeer',
-        }),
-    },
-})
-export default class AboutPage extends Vue {
-    private networkModel: NetworkModel;
+    @Component({
+        components: {
+            FormWrapper,
+            FormLabel,
+        },
+        computed: {
+            ...mapGetters({
+                networkModel: 'network/networkModel',
+                networkType: 'network/networkType',
+                currentPeer: 'network/currentPeer',
+            }),
+        },
+    })
+    export default class AboutPage extends Vue {
+        private networkModel: NetworkModel;
 
-    public currentPeer: URLInfo;
+        public currentPeer: URLInfo;
 
-    public configs = {
-        package: packageConfig,
-        packageLock: packageLockConfig,
-        app: appConfig,
-        fees: feesConfig,
-        network: networkConfig,
-    };
-    public types = NetworkType;
-    public networkType: NetworkType;
+        public configs = {
+            package: packageConfig,
+            packageLock: packageLockConfig,
+            app: appConfig,
+            fees: feesConfig,
+            network: networkConfig,
+        };
+        public types = NetworkType;
+        public networkType: NetworkType;
 
-    public isNetworkType(type): boolean {
-        return networkConfig[this.networkType].defaultNetworkType === type;
+        public isNetworkType(type): boolean {
+            return networkConfig[this.networkType].defaultNetworkType === type;
+        }
+
+        public get generationHash(): string {
+            return this.networkModel.generationHash;
+        }
+
+        public get nodeLink(): string {
+            return `${this.currentPeer}`;
+        }
     }
-
-    public get generationHash(): string {
-        return this.networkModel.generationHash;
-    }
-
-    public get nodeLink(): string {
-        return `${this.currentPeer}`;
-    }
-}
 </script>
 
 <style lang="less" scoped>
-@import '../../../resources/css/variables.less';
-.about-container {
-    display: block;
-    width: 100%;
-    clear: both;
-    min-height: 1rem;
-    padding-left: 6%;
-    padding-top: 0.8rem;
-    padding-bottom: 0.4rem;
+    @import '../../../resources/css/variables.less';
 
-    .form-row {
+    .about-container {
+        display: block;
+        width: 100%;
+        clear: both;
+        min-height: 1rem;
+        padding-left: 6%;
+        padding-top: 0.8rem;
+        padding-bottom: 0.4rem;
+        .form-row
+
+    {
         width: 100%;
         display: grid;
         grid-template-columns: 20% 80%;
@@ -180,5 +182,5 @@ export default class AboutPage extends Vue {
         color: @primary;
         margin-top: 50px;
     }
-}
+    }
 </style>

@@ -97,7 +97,7 @@ describe('FormNodeEdit', () => {
         wrapper.setData({
             formItems: {
                 nodeUrl: 'http://api-01.us-west-1.0941-v1.symboldev.network:3000',
-                networkType: 'TEST_NET',
+                networkType: 'MAIN_NET',
                 networkHash: 'ACECD90E7B248E012803228ADB4424F0D966D24149B72E58987D2BF2F2AF03C4',
             },
         });
@@ -106,7 +106,7 @@ describe('FormNodeEdit', () => {
         wrapper.setData({
             formItems: {
                 nodeUrl: 'http://dual-001.symbol.ninja:3000',
-                networkType: 'TEST_NET',
+                networkType: 'MAIN_NET',
                 networkHash: 'ACECD90E7B248E012803228ADB4424F0D966D24149B72E58987D2BF2F2AF03C4',
             },
         });

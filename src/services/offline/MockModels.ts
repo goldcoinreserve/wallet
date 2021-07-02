@@ -29,7 +29,7 @@ import { networkConfig } from '@/config';
 export const OfflineUrl = 'http://mock:3000';
 
 export const OfflineGenerationHash = {
-    [NetworkType.TEST_NET]: networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.generationHash,
+    [NetworkType.MAIN_NET]: networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.generationHash,
 };
 
 export const OfflineTransactionFees = new TransactionFees(84587, 100, 1136363, 0, 0);
@@ -38,20 +38,20 @@ export const OfflineNodeInfo = (networkType: NetworkType) =>
     new NodeInfo('pubkey', OfflineGenerationHash[networkType], 3000, networkType, 0, [], 'host', 'name');
 
 export const OfflineNetworkProperties = {
-    [NetworkType.TEST_NET]: new NetworkConfiguration(
+    [NetworkType.MAIN_NET]: new NetworkConfiguration(
         new NetworkProperties(
             'public-test',
             NodeIdentityEqualityStrategy.Host,
             '071964D3C040D62DE905EAE978E2119BFC8E70489BFDF45A85B3D7ED5A517AA8',
-            OfflineGenerationHash[NetworkType.TEST_NET],
-            networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.epochAdjustment + 's',
+            OfflineGenerationHash[NetworkType.MAIN_NET],
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.epochAdjustment + 's',
         ),
         new ChainProperties(
             true,
             true,
-            networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.currencyMosaicId,
-            networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.harvestingMosaicId,
-            networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.blockGenerationTargetTime + 's',
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.currencyMosaicId,
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.harvestingMosaicId,
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.blockGenerationTargetTime + 's',
             '3000',
             '180',
             '5',
@@ -62,7 +62,7 @@ export const OfflineNetworkProperties = {
             '500ms',
             "7'831'975'436'000'000",
             "9'000'000'000'000'000",
-            `${networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults.maxMosaicAtomicUnits}`,
+            `${networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.maxMosaicAtomicUnits}`,
             "10'000'000'000",
             "50'000'000'000'000",
             "3'000'000'000'000",

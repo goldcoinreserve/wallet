@@ -38,15 +38,15 @@ export class NetworkModelStorage extends VersionedNetworkBasedObjectStorage<Netw
                     // add new network
                     modified['1DFB2FAA9E7F054168B0C5FCB84F4DEB62CC2B4D317D861F3168D161F54EA78B'] = new NetworkModel(
                         'http://api-01.eu-central-1.096x.symboldev.network:3000',
-                        NetworkType.TEST_NET,
+                        NetworkType.MAIN_NET,
                         '1DFB2FAA9E7F054168B0C5FCB84F4DEB62CC2B4D317D861F3168D161F54EA78B',
-                        networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults,
+                        networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults,
                         new TransactionFees(3, 0, 1000, 0, 100),
                         new NodeInfo(
                             '0286F8813497D18B334E09BB48F213C90025D19D4CC7CC54ED6061F8FDA92A72',
                             '1DFB2FAA9E7F054168B0C5FCB84F4DEB62CC2B4D317D861F3168D161F54EA78B',
                             7900,
-                            NetworkType.TEST_NET,
+                            NetworkType.MAIN_NET,
                             0,
                             [RoleType.ApiNode],
                             '',
@@ -65,15 +65,15 @@ export class NetworkModelStorage extends VersionedNetworkBasedObjectStorage<Netw
                     // add new network
                     modified['6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD'] = new NetworkModel(
                         'http://api-01.ap-northeast-1.0.10.0.x.symboldev.network:3000/',
-                        NetworkType.TEST_NET,
+                        NetworkType.MAIN_NET,
                         '6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD',
-                        networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults,
+                        networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults,
                         new TransactionFees(3, 0, 1000, 0, 100),
                         new NodeInfo(
                             '70E06C112848A652D635755B7530D3096A978321D09B8D8DC17505CAE09565C5',
                             '6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD',
                             7900,
-                            NetworkType.TEST_NET,
+                            NetworkType.MAIN_NET,
                             0,
                             [RoleType.ApiNode],
                             '',
@@ -95,15 +95,15 @@ export class NetworkModelStorage extends VersionedNetworkBasedObjectStorage<Netw
                         // update URL and nodeInfo
                         modified['6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD'] = new NetworkModel(
                             'http://api-01.us-west-1.0.10.0.x.symboldev.network:3000',
-                            NetworkType.TEST_NET,
+                            NetworkType.MAIN_NET,
                             '6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD',
-                            networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults,
+                            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults,
                             new TransactionFees(3, 0, 1000, 0, 100),
                             new NodeInfo(
                                 'F5A8DA4CB59AA234A0A1CB62AEEC508AD9A3D4EBD5946BE2BCCCCAB111AF199C',
                                 '6C1B92391CCB41C96478471C2634C111D9E989DECD66130C0430B5B8D20117CD',
                                 7900,
-                                NetworkType.TEST_NET,
+                                NetworkType.MAIN_NET,
                                 0,
                                 [RoleType.PeerNode, RoleType.ApiNode, RoleType.VotingNode],
                                 '',

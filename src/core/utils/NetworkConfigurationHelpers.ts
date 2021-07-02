@@ -36,7 +36,7 @@ export class NetworkConfigurationHelpers {
      * This are the absolute defaults if the network is down and the configuration hasn't been cached
      * in the local storage.
      */
-    private static defaults = networkConfig[NetworkType.TEST_NET].networkConfigurationDefaults;
+    private static defaults = networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults;
 
     public static maxMosaicDivisibility(
         networkConfiguration: NetworkConfiguration | undefined,

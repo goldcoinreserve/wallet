@@ -1,11 +1,11 @@
 {
   "name": "gcr-desktop-wallet",
   "description": "GCR Wallet",
-  "homepage": "https://bitbucket.org/superhow/gcr-wallet/",
+  "homepage": "https://github.com/goldcoinreserve/wallet",
   "version": "1.0.2",
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/superhow/gcr-wallet/"
+    "url": "https://github.com/goldcoinreserve/wallet"
   },
   "license": "Apache-2.0",
   "scripts": {

@@ -61,7 +61,7 @@ export class NodeModelStorage extends VersionedObjectStorage<NodeModel[]> {
                 {
                     description: 'Removes old testnet nodes from the storage',
                     migrate: (data: NodeModel[]) => {
-                        return data.filter((n) => n.networkType !== NetworkType.TEST_NET);
+                        return data.filter((n) => n.networkType !== NetworkType.MAIN_NET);
                     },
                 },
             ],

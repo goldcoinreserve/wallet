@@ -50,15 +50,15 @@ export interface NetworkConfig {
     networkConfigurationDefaults: NetworkConfigurationDefaults;
 }
 
-export const defaultTestnetNetworkConfig: NetworkConfig = {
-    explorerUrl: 'http://explorer.gcr.superhow.net/',
-    faucetUrl: 'http://faucet.gcr.superhow.net/',
-    defaultNetworkType: 152,
+export const defaultMainnetNetworkConfig: NetworkConfig = {
+    explorerUrl: 'http://explorer.gcr-testnet.superhow.net/',
+    faucetUrl: 'http://faucet.gcr-testnet.superhow.net/',
+    defaultNetworkType: 104,
     networkConfigurationDefaults: {
         maxMosaicDivisibility: 6,
         namespaceGracePeriodDuration: 7776000,
         lockedFundsPerAggregate: '10000000',
-        maxCosignatoriesPerAccount: 25,
+        maxCosignatoriesPerAccount: 1000,
         blockGenerationTargetTime: 15,
         maxNamespaceDepth: 3,
         maxMosaicDuration: 315360000,
@@ -68,22 +68,23 @@ export const defaultTestnetNetworkConfig: NetworkConfig = {
         maxCosignedAccountsPerAccount: 25,
         maxMessageSize: 1024,
         maxMosaicAtomicUnits: 5000000000000000,
-        currencyMosaicId: '41AB747DEF2694ED',
-        harvestingMosaicId: '41AB747DEF2694ED',
+        currencyMosaicId: '6CAF5BAFEBF0256C',
+        harvestingMosaicId: '6CAF5BAFEBF0256C',
         defaultDynamicFeeMultiplier: 1000,
         epochAdjustment: 1573430400,
-        totalChainImportance: 420000000000000,
-        generationHash: 'DD0BBDAB10F80DA3487DE811D6707639AFA0FBC4799C9FAD1CB928B2BDF5F3E8',
+        totalChainImportance: 3000000000000,
+        generationHash: 'F64D22C245CACB978A570E18127460A085D89AEA67D20F2259CD23BDB0649F0D',
     },
     nodes: [
-        { friendlyName: 'GCR-DEVNET-dual-0', roles: 2, url: 'http://20.52.130.19:3000' },
-        { friendlyName: 'GCR-DEVNET-dual-1', roles: 2, url: 'http://20.52.131.211:3000' },
+        { friendlyName: 'GCR-DEVNET-dual0', roles: 2, url: 'http://20.79.16.203:3000' },
+        { friendlyName: 'GCR-DEVNET-dual1', roles: 2, url: 'http://20.79.16.206:3000' },
+        { friendlyName: 'GCR-DEVNET-dual2', roles: 2, url: 'http://20.79.16.207:3000' },
+
     ],
 };
 
-
 const defaultNetworkConfig: Record<number, NetworkConfig> = {
-    152: defaultTestnetNetworkConfig,
+    104: defaultMainnetNetworkConfig
 };
 
 const resolvedNetworkConfig: NetworkConfig = window['networkConfig'] || defaultNetworkConfig;

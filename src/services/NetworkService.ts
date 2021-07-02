@@ -54,7 +54,7 @@ export class NetworkService {
      */
     public getNetworkModel(
         nodeUrl: string,
-        defaultNetworkType: NetworkType = NetworkType.TEST_NET,
+        defaultNetworkType: NetworkType = NetworkType.MAIN_NET,
         isOffline = false,
     ): Observable<{
         networkModel: NetworkModel;
@@ -109,7 +109,7 @@ export class NetworkService {
     private createRepositoryFactory(
         url: string,
         isOffline = false,
-        networkType = NetworkType.TEST_NET,
+        networkType = NetworkType.MAIN_NET,
     ): Observable<{ url: string; repositoryFactory: RepositoryFactory }> {
         // console.log(`Testing ${url}`);
         const repositoryFactory = NetworkService.createRepositoryFactory(url, isOffline, networkType);
@@ -160,12 +160,12 @@ export class NetworkService {
      * It creates the RepositoryFactory used to build the http repository/clients and listeners.
      * @param url the url.
      */
-    public static createRepositoryFactory(url: string, isOffline: boolean = false, networkType = NetworkType.TEST_NET): RepositoryFactory {
+    public static createRepositoryFactory(url: string, isOffline: boolean = false, networkType = NetworkType.MAIN_NET): RepositoryFactory {
         return isOffline
             ? new OfflineRepositoryFactory(networkType)
             : new RepositoryFactoryHttp(url, {
-                  websocketUrl: URLHelpers.httpToWsUrl(url) + '/ws',
-                  websocketInjected: WebSocket,
-              });
+                websocketUrl: URLHelpers.httpToWsUrl(url) + '/ws',
+                websocketInjected: WebSocket,
+            });
     }
 }

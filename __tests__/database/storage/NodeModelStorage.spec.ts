@@ -39,13 +39,13 @@ describe('storage/ProfileModelStorage.spec ==>', () => {
                         url: 'http://someOldtestet.symbolblockchain.io:3000',
                         friendlyName: 'ngl-someOldtestet-001',
                         isDefault: true,
-                        networkType: NetworkType.TEST_NET,
+                        networkType: NetworkType.MAIN_NET,
                     },
                     {
                         url: 'http://someOldtestet2.symbolblockchain.io:3000',
                         friendlyName: 'ngl-someOldtestet2-002',
                         isDefault: true,
-                        networkType: NetworkType.TEST_NET,
+                        networkType: NetworkType.MAIN_NET,
                     },
                     {
                         url: 'http://somePrivate.symbolblockchain.io:3000',

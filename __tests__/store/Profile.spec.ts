@@ -59,7 +59,7 @@ describe('store/Profile', () => {
             // prepare
             const commit = jest.fn();
             const dispatch = jest.fn();
-            const model = { networkType: NetworkType.TEST_NET } as ProfileModel;
+            const model = { networkType: NetworkType.MAIN_NET } as ProfileModel;
             // act
             await ProfileStore.actions.SET_CURRENT_PROFILE({ commit, dispatch }, model);
 

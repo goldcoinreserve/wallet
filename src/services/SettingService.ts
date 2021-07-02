@@ -32,7 +32,7 @@ export class SettingService {
     private readonly storage = SettingsModelStorage.INSTANCE;
 
     public getProfileSettings(profileName: string, networkType: NetworkType): SettingsModel {
-        const storedData = this.storage.get() || {};
+        const storedData = this.storage.get() || this.getProfileSettings
         return {
             ...this.createDefaultSettingsModel(profileName, networkType),
             ...(storedData[profileName] || {}),
@@ -64,3 +64,4 @@ export class SettingService {
         this.storage.set(storedData);
     }
 }
+s
