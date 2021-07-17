@@ -2,7 +2,7 @@
   "name": "gcr-desktop-wallet",
   "description": "GCR Wallet",
   "homepage": "https://github.com/goldcoinreserve/wallet",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/goldcoinreserve/wallet"

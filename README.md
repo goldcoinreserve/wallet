@@ -1,5 +1,5 @@
 ﻿![](https://coincost.net/uploads/temp/4c6fb6e0682ec5477550c7914638169c.png)﻿
-# GCR Wallet v1.0.2
+# GCR Wallet v1.0.3
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
