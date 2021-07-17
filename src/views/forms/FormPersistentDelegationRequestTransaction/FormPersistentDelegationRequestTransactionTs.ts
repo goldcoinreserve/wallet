@@ -726,11 +726,11 @@ export class FormPersistentDelegationRequestTransactionTs extends FormTransactio
 
     public onStart() {
         this.action = HarvestingAction.START;
-        if (this.networkBalanceMosaics.balance / Math.pow(10, this.networkBalanceMosaics.divisibility) < 10000) {
+        if (this.networkBalanceMosaics.balance / Math.pow(10, this.networkBalanceMosaics.divisibility) <= 1) {
             this.$store.dispatch('notification/ADD_ERROR', this.$t('harvesting_account_insufficient_balance'));
             return;
         }
-        if (this.networkBalanceMosaics.balance / Math.pow(10, this.networkBalanceMosaics.divisibility) >= 50000000) {
+        if (this.networkBalanceMosaics.balance / Math.pow(10, this.networkBalanceMosaics.divisibility) >= 30000) {
             this.$store.dispatch('notification/ADD_ERROR', this.$t('harvesting_account_has_extra_balance'));
             return;
         }

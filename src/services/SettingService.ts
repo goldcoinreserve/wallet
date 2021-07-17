@@ -64,4 +64,3 @@ export class SettingService {
         this.storage.set(storedData);
     }
 }
-s

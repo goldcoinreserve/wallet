@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet
+spec:
+  selector:
+    matchLabels:
+      app: wallet
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wallet
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+        - name: wallet
+          image: superhow/gcr-wallet:latest
+          resources:
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: wallet

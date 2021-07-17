@@ -218,7 +218,7 @@ export class MosaicService {
     /**
      * This method returns the list of {@link NetworkCurrencyModel} of the network.
      *
-     * The intent of this method is to resolve the configured main (like cat.currency or symbol.xym)
+     * The intent of this method is to resolve the configured main (like cat.currency or gcr.currency)
      * and harvest currencies (cat.harvest) returned by the network configuration endpoint.
      *
      * @param {RepositoryFactory} repositoryFactory

@@ -32,7 +32,7 @@ export class NetworkCurrenciesModelStorage extends VersionedNetworkBasedObjectSt
                     const xymMosaic96x = new NetworkCurrencyModel(
                         '5E62990DCAC5BE8A',
                         'E74B99BA41F4AFEE',
-                        'symbol.xym',
+                        'gcr.currency',
                         6,
                         true,
                         false,
@@ -49,7 +49,7 @@ export class NetworkCurrenciesModelStorage extends VersionedNetworkBasedObjectSt
                     const xymMosaic96x = new NetworkCurrencyModel(
                         '5B66E76BECAD0860',
                         'E74B99BA41F4AFEE',
-                        'symbol.xym',
+                        'gcr.currency',
                         6,
                         true,
                         false,

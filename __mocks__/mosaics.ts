@@ -2,7 +2,7 @@ export const mosaicsMock = [
     {
         addressRawPlain: 'TAD5BAHLOIXCRRB6GU2H72HPXMBBVAEUQRYPHBY',
         ownerRawPlain: 'TAWJ2M7BGKWGBPOUGD5NDKHYDDQ7OQD26HJMMQQ',
-        name: 'symbol.xym',
+        name: 'gcr.currency',
         isCurrencyMosaic: true,
         balance: 15000000,
         mosaicIdHex: '519FC24B9223E0B4',
@@ -60,7 +60,7 @@ export const mosaicsMock = [
     {
         addressRawPlain: 'TDARSPFSZVLYGBOHGOVWIKAZ4FGGDPGZ3DSS7CQ',
         ownerRawPlain: 'TCEPWMC37ZGXOGOXQOAGDYPI7YH65HLXIMLKNOQ',
-        name: 'symbol.xym',
+        name: 'gcr.currency',
         isCurrencyMosaic: true,
         balance: 958700624,
         mosaicIdHex: '519FC24B9223E0B4',
@@ -118,7 +118,7 @@ export const mosaicsMock = [
     {
         addressRawPlain: 'TAWJ2M7BGKWGBPOUGD5NDKHYDDQ7OQD26HJMMQQ',
         ownerRawPlain: 'TCEPWMC37ZGXOGOXQOAGDYPI7YH65HLXIMLKNOQ',
-        name: 'symbol.xym',
+        name: 'gcr.currency',
         isCurrencyMosaic: true,
         balance: 1819951406,
         mosaicIdHex: '519FC24B9223E0B4',
@@ -176,7 +176,7 @@ export const mosaicsMock = [
     {
         addressRawPlain: 'TAUDGSA7IEFH6MRGXO26SUU3W5ICF7OLLI3O7CY',
         ownerRawPlain: 'TCEPWMC37ZGXOGOXQOAGDYPI7YH65HLXIMLKNOQ',
-        name: 'symbol.xym',
+        name: 'gcr.currency',
         isCurrencyMosaic: true,
         balance: 979900272,
         mosaicIdHex: '519FC24B9223E0B4',
@@ -234,7 +234,7 @@ export const mosaicsMock = [
     {
         addressRawPlain: 'TAUDGSA7IEFH6MRGXO26SUU3W5ICF7OLLI3O7CY',
         ownerRawPlain: 'TCEPWMC37ZGXOGOXQOAGDYPI7YH65HLXIMLKNOQ',
-        name: 'symbol.xym',
+        name: 'gcr.currency',
         isCurrencyMosaic: true,
         balance: 998000304,
         mosaicIdHex: '519FC24B9223E0B4',
