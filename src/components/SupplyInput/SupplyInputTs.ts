@@ -43,7 +43,7 @@ export class SupplyInputTs extends Vue {
      * Form label
      * @type {string}
      */
-    @Prop({ default: 'supply' }) label: string;
+    @Prop({ default: 'supply_absolute' }) label: string;
 
     /**
      * Validation rules

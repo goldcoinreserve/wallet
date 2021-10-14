@@ -8,7 +8,10 @@
             :footer-hide="true"
             @close="show = false"
         >
-            <div class="transaction-details-content">
+            <div v-if="isOptinTransaction && isOptinTransactionContainsPayout" class="transaction-details-content">
+                <TransactionOptinPayoutDetails :transaction="transaction" :current-account="currentAccount" />
+            </div>
+            <div v-else class="transaction-details-content">
                 <TransactionDetails :transaction="transaction" />
 
                 <div v-if="cosignatures && cosignatures.length">
@@ -33,7 +36,7 @@
                 </div>
                 <div v-if="hasMissSignatures">
                     <div v-if="!needsCosignature">
-                        <div class="explain">
+                        <div v-if="!isOptinTransaction" class="explain">
                             <span class="subtitle">{{ $t('transaction_needs_cosignature') }}</span>
                             <div class="explain-qr">
                                 <p>{{ $t('transaction_needs_cosignature_explain_signed') }}</p>
@@ -50,10 +53,30 @@
                         <div class="explain">
                             <span class="subtitle">{{ $t('transaction_needs_cosignature') }}</span>
                             <p>{{ $t('transaction_needs_cosignature_explain') }}</p>
+                            <span v-if="!hideCosignerWarning" class="warning">
+                                <Alert type="warning" show-icon>
+                                    <div class="warning-row emphasis">
+                                        {{ $t('transaction_cosignature_warning_unknown_cosigner') }}
+                                    </div>
+                                    <div class="warning-row">
+                                        {{ $t('transaction_cosignature_warning_dont_sign') }}
+                                    </div>
+                                    <div class="inputs-container emphasis">
+                                        <Checkbox v-model="wantToProceed">
+                                            {{ $t('transaction_cosignature_warning_proceed') }}
+                                        </Checkbox>
+                                    </div>
+                                </Alert>
+                            </span>
                         </div>
 
                         <HardwareConfirmationButton v-if="isUsingHardwareWallet" @success="onSigner" @error="onError" />
-                        <FormProfileUnlock v-else @success="onAccountUnlocked" @error="onError" />
+                        <FormProfileUnlock
+                            v-else
+                            :disabled="!hideCosignerWarning && !wantToProceed"
+                            @success="onAccountUnlocked"
+                            @error="onError"
+                        />
                     </div>
                 </div>
                 <div v-else-if="expired">

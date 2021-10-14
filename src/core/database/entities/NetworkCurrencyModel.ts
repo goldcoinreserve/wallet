@@ -53,7 +53,7 @@ export class NetworkCurrencyModel {
          */
         public readonly restrictable: boolean,
         /**
-         * The ticket name like XYM when namespace fullname is gcr.currency
+         * The ticket name like XYM when namespace fullname is symbol.xym
          */
         public readonly ticker: string | undefined,
     ) {}

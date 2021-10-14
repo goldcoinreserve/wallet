@@ -17,6 +17,7 @@
                             </p>
                             <p v-if="harvestingStatus === 'INACTIVE' && !isActivatedFromAnotherDevice">
                                 {{ $t('harvesting_node_selection') }}
+                                <a :href="allNodeListUrl" target="_blank"> {{ $t('open_explorer_node_list') }} </a>
                             </p>
                             <Alert
                                 :visible="isActivatedFromAnotherDevice"
@@ -36,7 +37,7 @@
                         </div>
 
                         <!-- Transaction signer selector -->
-                        <SignerSelector v-model="formItems.signerAddress" :signers="signers" @input="onChangeSigner" />
+                        <SignerSelector v-model="formItems.signerAddress" :root-signer="currentAccountSigner" @input="onChangeSigner" />
 
                         <NetworkNodeSelector
                             v-model="formItems.nodeModel"

@@ -18,7 +18,7 @@ import { mapGetters } from 'vuex';
 import { Component, Vue } from 'vue-property-decorator';
 // child components
 // @ts-ignore
-import SignerFilter from '@/components/SignerFilter/SignerFilter.vue';
+import SignerListFilter from '@/components/SignerListFilter/SignerListFilter.vue';
 // @ts-ignore
 import TransactionStatusFilter from '@/components/TransactionList/TransactionListFilters/TransactionStatusFilter/TransactionStatusFilter.vue';
 //@ts-ignore
@@ -28,11 +28,11 @@ import { AccountModel } from '@/core/database/entities/AccountModel';
 import { Address } from 'symbol-sdk';
 
 @Component({
-    components: { SignerFilter, TransactionStatusFilter, ButtonRefresh },
+    components: { SignerListFilter, TransactionStatusFilter, ButtonRefresh },
     computed: {
         ...mapGetters({
             currentAccount: 'account/currentAccount',
-            signers: 'account/signers',
+            currentAccountSigner: 'account/currentAccountSigner',
         }),
     },
 })
@@ -44,9 +44,9 @@ export class TransactionListFiltersTs extends Vue {
     protected currentAccount: AccountModel;
 
     /**
-     * current signers
+     * current account signer
      */
-    public signers: Signer[];
+    public currentAccountSigner: Signer;
 
     /**
      * Hook called when the signer selector has changed
@@ -69,15 +69,5 @@ export class TransactionListFiltersTs extends Vue {
 
     public downloadTransactions() {
         this.$emit('downloadTransactions');
-    }
-
-    /**
-     * Hook called before the component is destroyed
-     */
-    beforeDestroy(): void {
-        // reset the selected signer if it is not the current account
-        if (this.currentAccount) {
-            this.onSignerSelectorChange(this.currentAccount.address);
-        }
     }
 }

@@ -19,12 +19,9 @@
                 {{ fees.find((i) => i.maxFee == chosenMaxFee).label }}
             </div>
         </div>
-        <span v-if="showLowFeeWarning && !displayOnly" style="color: red;">
+        <span v-if="showLowFeeWarning && !displayOnly" style="color: red;" :class="{ 'offline-warning-style': isOfflineTransaction }">
             <Icon type="ios-warning-outline" />
             {{ $t('low_fee_warning_message') }}
-        </span>
-        <span v-else-if="transactionFees.minFeeMultiplier && !displayOnly" style="color: #ff9600;">
-            {{ $t('minimal_fee_transaction') + transactionFees.minFeeMultiplier.toString() }}
         </span>
     </div>
 </template>

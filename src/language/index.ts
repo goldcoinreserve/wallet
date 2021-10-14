@@ -5,16 +5,18 @@ import Vue from 'vue';
 // internal translation messages
 import en_US from '@/language/en-US.json';
 
+
 // external translation messages
 import enValidationMessages from 'vee-validate/dist/locale/en.json';
 
+const defaultLang = 'en-US';
 const messages = {
     'en-US': { ...en_US, validation: enValidationMessages.messages },
 };
 
 const navLang = navigator.language;
-const localLang = navLang === 'zh-CN' || navLang === 'en-US' ? navLang : false;
-const lang = window.localStorage.getItem('locale') || localLang || 'en-US';
+const localLang = Object.keys(messages).includes(navLang) ? navLang : false;
+const lang = window.localStorage.getItem('locale') || localLang || defaultLang;
 
 Vue.use(VueI18n);
 

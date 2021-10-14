@@ -38,6 +38,8 @@ import SupplyInput from '@/components/SupplyInput/SupplyInput.vue';
 // @ts-ignore
 import DivisibilityInput from '@/components/DivisibilityInput/DivisibilityInput.vue';
 // @ts-ignore
+import SupplyAmount from '@/components/SupplyAmount/SupplyAmount.vue';
+// @ts-ignore
 import DurationInput from '@/components/DurationInput/DurationInput.vue';
 // @ts-ignore
 import ModalTransactionConfirmation from '@/views/modals/ModalTransactionConfirmation/ModalTransactionConfirmation.vue';
@@ -56,6 +58,7 @@ import RentalFee from '@/components/RentalFees/RentalFee.vue';
         SignerSelector,
         SupplyInput,
         DivisibilityInput,
+        SupplyAmount,
         DurationInput,
         ModalTransactionConfirmation,
         MaxFeeAndSubmit,
@@ -219,11 +222,8 @@ export class FormMosaicDefinitionTransactionTs extends FormTransactionBase {
      * Resetting the form when choosing a multisig signer and changing multisig signer
      * Is necessary to make the mosaic inputs reactive
      */
-    @Watch('selectedSigner')
-    onSelectedSignerChange() {
-        this.formItems.signerAddress = this.selectedSigner.address.plain();
-        if (this.isMultisigMode()) {
-            this.resetForm();
-        }
+    public async signerChanged(address: string) {
+        await this.onChangeSigner(address);
+        this.resetForm();
     }
 }

@@ -67,7 +67,7 @@ import ProtectedPrivateKeyDisplay from '@/components/ProtectedPrivateKeyDisplay/
 // @ts-ignore
 import ModalFormProfileUnlock from '@/views/modals/ModalFormProfileUnlock/ModalFormProfileUnlock.vue';
 // @ts-ignore
-import AccountSignerSelector from '@/components/AccountSignerSelector/AccountSignerSelector.vue';
+const AccountSignerSelector = () => import('@/components/AccountSignerSelector/AccountSignerSelector.vue');
 
 // @ts-ignore
 import FormRow from '@/components/FormRow/FormRow.vue';
@@ -243,10 +243,11 @@ export class FormTransferTransactionTs extends FormTransactionBase {
 
     private plainMessage: string;
     private feesConfig: {
-        median: number;
         fast: number;
+        median: number;
         slow: number;
         slowest: number;
+        free: number;
     };
     private transactionSize: number = 0;
     /**
@@ -255,23 +256,12 @@ export class FormTransferTransactionTs extends FormTransactionBase {
      */
     protected resetForm(): void {
         this.showUnlockAccountModal = false;
-        this.mosaicInputsManager = MosaicInputsManager.initialize(this.currentMosaicList());
-
         if (this.editMode) {
             return;
         }
 
-        // - reset attached mosaics
-        this.formItems.attachedMosaics = [];
-
         // - set default form values
-        if (this.isAggregate) {
-            if (this.isMounted) {
-                this.formItems.signerAddress = this.selectedSigner ? this.selectedSigner.address.plain() : this.currentAccount.address;
-            }
-        } else {
-            this.formItems.signerAddress = this.selectedSigner ? this.selectedSigner.address.plain() : this.currentAccount.address;
-        }
+        this.formItems.signerAddress = this.selectedSigner ? this.selectedSigner.address.plain() : this.currentAccount.address;
 
         this.formItems.selectedMosaicHex = this.networkMosaic.toHex();
         // default currentAccount Address to recipientRaw
@@ -283,6 +273,29 @@ export class FormTransferTransactionTs extends FormTransactionBase {
         }
         this.formItems.recipient = !!this.recipient ? this.recipient : null;
 
+        this.formItems.messagePlain = this.message ? Formatters.hexToUtf8(this.message.payload) : '';
+        this.formItems.encryptMessage = false;
+        this.encyptedMessage = null;
+        // - maxFee must be absolute
+        this.formItems.maxFee = this.defaultFee;
+
+        // transaction details passed via router
+        this.importTransaction = this.$route.params.transaction || this.importedTransaction ? true : false;
+        this.resetMosaicsAndTriggerChange(this.importTransaction, true);
+    }
+
+    /**
+     * Resetting mosaics list when signer is changed
+     * @param {boolean} importedTransaction checks if transaction is imported
+     * @param {string} triggerChange checks if triggerChange() needs to be called
+     * @return {void}
+     */
+    private resetMosaicsAndTriggerChange(importedTransaction: boolean, triggerChange = false): void {
+        this.mosaicInputsManager = MosaicInputsManager.initialize(this.currentMosaicList());
+        // - reset attached mosaics
+        this.formItems.attachedMosaics = [];
+        this.formItems.selectedMosaicHex = this.networkMosaic.toHex();
+
         const attachedMosaics: MosaicAttachment[] = [
             {
                 id: new MosaicId(this.networkCurrency.mosaicIdHex),
@@ -293,28 +306,21 @@ export class FormTransferTransactionTs extends FormTransactionBase {
             },
         ];
 
-        this.formItems.messagePlain = this.message ? Formatters.hexToUtf8(this.message.payload) : '';
-        this.formItems.encryptMessage = false;
-        this.encyptedMessage = null;
-        // - maxFee must be absolute
-        this.formItems.maxFee = this.defaultFee;
-
-        // transaction details passed via router
-        this.importTransaction = this.$route.params.transaction || this.importedTransaction ? true : false;
-        if (this.importTransaction) {
+        if (importedTransaction) {
             this.setTransactions([!!this.importedTransaction ? this.importedTransaction : this.$route.params.transaction] as any);
             this.formItems.attachedMosaics.forEach((attachedMosaic) => {
                 this.mosaicInputsManager.setSlot(attachedMosaic.mosaicHex, attachedMosaic.uid);
             });
             this.onChangeRecipient();
         } else {
-            // - set attachedMosaics and allocate slots
             attachedMosaics.forEach((attachedMosaic, index) => {
                 this.mosaicInputsManager.setSlot(attachedMosaic.mosaicHex, attachedMosaic.uid);
                 Vue.set(this.formItems.attachedMosaics, index, attachedMosaic);
             });
         }
-        this.triggerChange();
+        if (triggerChange) {
+            this.triggerChange();
+        }
     }
 
     /**
@@ -344,6 +350,18 @@ export class FormTransferTransactionTs extends FormTransactionBase {
      */
     protected getTransactions(): TransferTransaction[] {
         const mosaicsInfo = this.$store.getters['mosaic/mosaics'] as MosaicModel[];
+
+        // Push network currency info for offline transaction format amount to absolute
+        if (mosaicsInfo.length === 0) {
+            mosaicsInfo.push({
+                mosaicIdHex: this.networkCurrency.mosaicIdHex,
+                divisibility: this.networkCurrency.divisibility,
+                name: this.networkCurrency.namespaceIdFullname,
+                isCurrencyMosaic: true,
+                balance: 0,
+            } as MosaicModel);
+        }
+
         const mosaics = this.formItems.attachedMosaics
             .filter((attachment) => attachment.uid) // filter out null values
             .map(
@@ -497,7 +515,7 @@ export class FormTransferTransactionTs extends FormTransactionBase {
                     id: new MosaicId(info.mosaicIdHex), // XXX resolve mosaicId from namespaceId
                     mosaicHex: info.mosaicIdHex, // XXX resolve mosaicId from namespaceId
                     name: info.name,
-                    amount: (mosaic.amount.compact() / Math.pow(10, info.divisibility)).toLocaleString(undefined, {
+                    amount: (Number(mosaic.amount.toString()) / Math.pow(10, info.divisibility)).toLocaleString(undefined, {
                         maximumFractionDigits: info.divisibility,
                     }),
                     uid: Math.floor(Math.random() * 10e6), // used to index dynamic inputs
@@ -543,7 +561,7 @@ export class FormTransferTransactionTs extends FormTransactionBase {
     onChangeRecipient() {
         // filter tags
         this.formItems.recipientRaw = FilterHelpers.stripFilter(this.formItems.recipientRaw);
-        if (Address.isValidRawAddress(this.formItems.recipientRaw)) {
+        if (AddressValidator.validate(this.formItems.recipientRaw)) {
             this.$store.dispatch('account/GET_RECIPIENT', Address.createFromRawAddress(this.formItems.recipientRaw)).then(() => {
                 if (!this.currentRecipient?.publicKey || /^0*$/.test(this.currentRecipient.publicKey)) {
                     this.resetEncryptedMessage();
@@ -592,12 +610,10 @@ export class FormTransferTransactionTs extends FormTransactionBase {
      * Resetting the form when choosing a multisig signer and changing multisig signer
      * Is necessary to make the mosaic inputs reactive
      */
-    @Watch('selectedSigner')
-    onSelectedSignerChange() {
+    public async signerChanged(address: string) {
+        await this.onChangeSigner(address);
         this.formItems.signerAddress = this.selectedSigner.address.plain();
-        if (this.isMultisigMode()) {
-            this.resetForm();
-        }
+        this.resetMosaicsAndTriggerChange(false, true);
     }
 
     /**
@@ -731,7 +747,7 @@ export class FormTransferTransactionTs extends FormTransactionBase {
             this.networkType,
             this.networkConfiguration,
             this.transactionFees,
-            this.currentSignerMultisigInfo ? this.currentSignerMultisigInfo.minApproval : this.selectedSigner.requiredCosignatures,
+            this.selectedSigner.requiredCosigApproval,
         );
     }
 
@@ -788,5 +804,11 @@ export class FormTransferTransactionTs extends FormTransactionBase {
      */
     public onSignedOfflineTransaction(signedTransaction: SignedTransaction) {
         this.$emit('txSigned', signedTransaction);
+    }
+    async beforeUpdate() {
+        const signerChanged: boolean = this.formItems.signerAddress !== this.selectedSigner.address.plain();
+        if (signerChanged) {
+            await this.signerChanged(this.selectedSigner.address.plain());
+        }
     }
 }

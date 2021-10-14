@@ -79,7 +79,7 @@ export default {
             });
 
             // if it's a refresh request then refresh the list, else concat the new items to the list
-            state.ownedNamespaces = refresh ? uniqueNamespaces : state.ownedNamespaces.concat(uniqueNamespaces);
+            state.ownedNamespaces = refresh ? uniqueNamespaces : _.uniqBy(state.ownedNamespaces.concat(uniqueNamespaces), 'namespaceIdHex');
             state.currentConfirmedPage = pageInfo;
         },
         isFetchingNamespaces: (state: NamespaceState, isFetchingNamespaces: boolean) =>
@@ -141,23 +141,19 @@ export default {
 
         async GET_LINKED_ADDRESS({ commit, rootGetters }, namespaceId: NamespaceId) {
             const repositoryFactory = rootGetters['network/repositoryFactory'] as RepositoryFactory;
-            const getLinkedAccountPromise = repositoryFactory
+            repositoryFactory
                 .createNamespaceRepository()
                 .getLinkedAddress(namespaceId)
                 .toPromise()
+                .then((linkedAddress) => {
+                    commit('linkedAddress', linkedAddress);
+                    return linkedAddress;
+                })
                 .catch(() => commit('linkedAddress', null));
-            const linkedAddress = await getLinkedAccountPromise;
-
-            commit('linkedAddress', linkedAddress);
         },
 
-        SIGNER_CHANGED({ commit, rootGetters, getters }) {
-            const namespaces: NamespaceModel[] = getters['namespaces'];
-            const currentSignerAddress: Address = rootGetters['account/currentSignerAddress'];
-            if (!currentSignerAddress) {
-                return;
-            }
-            commit('namespaces', { namespaces, currentSignerAddress });
+        SIGNER_CHANGED({ dispatch }) {
+            dispatch('LOAD_NAMESPACES');
         },
 
         async RESOLVE_NAME({ commit, getters, rootGetters }, namespaceId: NamespaceId): Promise<string> {

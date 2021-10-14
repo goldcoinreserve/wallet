@@ -1,5 +1,5 @@
 ﻿![](https://coincost.net/uploads/temp/4c6fb6e0682ec5477550c7914638169c.png)﻿
-# GCR Wallet v1.0.3
+# GCR Wallet v1.0.7
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -77,13 +77,13 @@ node -v
 1. Clone the project.
 
 ```
-git clone https://github.com/superhow/gcr-wallet.git
+git clone https://github.com/goldcoinreserve/wallet.git
 ```
 
 2. Navigate to the project folder.
 
 ```
-cd gcr-wallet
+cd wallet
 ```
 	
 3. Install the dependencies. This may take a while.

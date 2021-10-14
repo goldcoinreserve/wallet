@@ -2,12 +2,14 @@
     <FormWrapper>
         <ValidationObserver v-slot="{ handleSubmit }" ref="observer" slim>
             <form onsubmit="event.preventDefault()">
-                <SignerSelector v-model="formItems.signerAddress" :signers="signers" @input="onChangeSigner" />
+                <SignerSelector v-model="formItems.signerAddress" :root-signer="currentAccountSigner" @input="signerChanged" />
 
                 <!-- hide supply input in aggregate transactions -->
                 <SupplyInput v-if="!isAggregate" v-model="formItems.supply" />
 
                 <DivisibilityInput v-model="formItems.divisibility" />
+
+                <SupplyAmount v-if="!isAggregate" :supply="formItems.supply" :divisibility="formItems.divisibility" />
 
                 <DurationInput
                     v-show="!formItems.permanent"

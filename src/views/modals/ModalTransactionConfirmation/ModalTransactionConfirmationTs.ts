@@ -39,7 +39,7 @@ import { ProfileModel } from '@/core/database/entities/ProfileModel';
 import { ValidationObserver } from 'vee-validate';
 import { Signer } from '@/store/Account';
 import { NetworkCurrencyModel } from '@/core/database/entities/NetworkCurrencyModel';
-import { TransactionCommand, TransactionCommandMode } from '@/services/TransactionCommand';
+import { TransactionCommandMode } from '@/services/TransactionCommand';
 import { NetworkConfigurationModel } from '@/core/database/entities/NetworkConfigurationModel';
 // @ts-ignore
 import { Observable, of } from 'rxjs';
@@ -47,6 +47,7 @@ import { AccountService } from '@/services/AccountService';
 import { LedgerService } from '@/services/LedgerService';
 
 // internal dependencies
+import { NodeModel } from '@/core/database/entities/NodeModel';
 import { AccountModel, AccountType } from '@/core/database/entities/AccountModel';
 import { LedgerHarvestingMode } from '@/store/Harvesting';
 import { AccountTransactionSigner, TransactionAnnouncerService, TransactionSigner } from '@/services/TransactionAnnouncerService';
@@ -84,6 +85,7 @@ import HardwareConfirmationButton from '@/components/HardwareConfirmationButton/
             networkConfiguration: 'network/networkConfiguration',
             transactionFees: 'network/transactionFees',
             isOfflineMode: 'network/isOfflineMode',
+            clientServerTimeDifference: 'network/clientServerTimeDifference',
         }),
     },
 })
@@ -218,6 +220,7 @@ export class ModalTransactionConfirmationTs extends Vue {
     protected isMultisigMode(): boolean {
         return this.isCosignatoryMode === true;
     }
+    private clientServerTimeDifference: number;
 
     public async mounted() {
         this.stagedTransactions = await this.command.resolveTransactions().toPromise();
@@ -235,43 +238,6 @@ export class ModalTransactionConfirmationTs extends Vue {
      */
     protected getTransactions(): Transaction[] {
         throw new Error("Getter method 'getTransactions()' must be overloaded in derivate components.");
-    }
-    protected getTransactionCommandMode(transactions: Transaction[]): TransactionCommandMode {
-        if (this.isMultisigMode()) {
-            return TransactionCommandMode.MULTISIGN;
-        }
-        if (transactions.length > 1) {
-            return TransactionCommandMode.AGGREGATE;
-        } else {
-            return TransactionCommandMode.SIMPLE;
-        }
-    }
-    public createTransactionCommand(): TransactionCommand {
-        const transactions = this.getTransactions();
-        const mode = this.getTransactionCommandMode(transactions);
-        return new TransactionCommand(
-            mode,
-            this.selectedSigner,
-            this.currentSignerPublicKey,
-            transactions,
-            this.networkMosaic,
-            this.generationHash,
-            this.networkType,
-            this.epochAdjustment,
-            this.networkConfiguration,
-            this.transactionFees,
-            this.currentSignerMultisigInfo ? this.currentSignerMultisigInfo.minApproval : this.selectedSigner.requiredCosignatures,
-        );
-    }
-    /**
-     * Setter for transactions that will be staged
-     * @param {Transaction[]} transactions
-     * @throws {Error} If not overloaded in derivate component
-     */
-    protected setTransactions(transactions: Transaction[]) {
-        //TODO do we need these methods?
-        const error = `setTransactions() must be overloaded. Call got ${transactions.length} transactions.`;
-        throw new Error(error);
     }
 
     /// region computed properties getter/setter
@@ -438,7 +404,7 @@ export class ModalTransactionConfirmationTs extends Vue {
         const { ledgerService, currentPath, isOptinLedgerWallet, ledgerAccount, multisigAccount, stageTransactions, maxFee } = values;
         const aggregate = this.command.calculateSuggestedMaxFee(
             AggregateTransaction.createComplete(
-                Deadline.create(this.epochAdjustment),
+                this.createDeadline(),
                 stageTransactions.map((t) => t.toAggregate(multisigAccount)),
                 this.networkType,
                 [],
@@ -468,7 +434,7 @@ export class ModalTransactionConfirmationTs extends Vue {
         const { ledgerService, currentPath, isOptinLedgerWallet, ledgerAccount, multisigAccount, stageTransactions, maxFee } = values;
         const aggregate = this.command.calculateSuggestedMaxFee(
             AggregateTransaction.createBonded(
-                Deadline.create(this.epochAdjustment, 48),
+                this.createDeadline(48),
                 stageTransactions.map((t) => t.toAggregate(multisigAccount)),
                 this.networkType,
                 [],
@@ -482,7 +448,7 @@ export class ModalTransactionConfirmationTs extends Vue {
             });
         const hashLock = this.command.calculateSuggestedMaxFee(
             LockFundsTransaction.create(
-                Deadline.create(this.epochAdjustment, 6),
+                this.createDeadline(6),
                 new Mosaic(this.networkMosaic, UInt64.fromNumericString(this.networkConfiguration.lockedFundsPerAggregate)),
                 UInt64.fromUint(5760),
                 signedAggregateTransaction,
@@ -612,6 +578,11 @@ export class ModalTransactionConfirmationTs extends Vue {
     }
 
     private async ledgerAccDelHarvestKeyOnStop(values) {
+        const accountAddress = this.command.currentSignerHarvestingModel.accountAddress;
+
+        // pre store vrf and remote Key in local
+        this.preStoreHarvestingKeyInfo(accountAddress);
+
         const { ledgerService, currentPath, isOptinLedgerWallet, ledgerAccount } = values;
         const keyUnLinkAggregateCompleteTransaction = this.stagedTransactions[0];
         this.$store.dispatch('notification/ADD_SUCCESS', 'verify_device_information');
@@ -627,7 +598,6 @@ export class ModalTransactionConfirmationTs extends Vue {
         const services = new TransactionAnnouncerService(this.$store);
         services.announce(signedKeyUnLinkAggregateCompleteTransaction).subscribe((res) => {
             if (res.success) {
-                const accountAddress = this.command.currentSignerHarvestingModel.accountAddress;
                 // @ts-ignore
                 if (!!res.transaction?.innerTransactions) {
                     // @ts-ignore
@@ -690,11 +660,6 @@ export class ModalTransactionConfirmationTs extends Vue {
                         });
                     }
                 }
-
-                this.$store.dispatch('harvesting/UPDATE_ACCOUNT_SELECTED_HARVESTING_NODE', {
-                    accountAddress,
-                    selectedHarvestingNode: this.command.formItems.nodeModel,
-                });
             }
         });
         this.show = false;
@@ -779,6 +744,10 @@ export class ModalTransactionConfirmationTs extends Vue {
     }
 
     private async ledgerAccMultisigDelHarvestKeyOnStop(values) {
+        const accountAddress = this.command.currentSignerHarvestingModel.accountAddress;
+
+        this.preStoreHarvestingKeyInfo(accountAddress);
+
         const { ledgerService, currentPath, ledgerAccount } = values;
 
         const lockFundsKeyUnLinkAggregateBondedTransaction = this.stagedTransactions[0];
@@ -806,7 +775,6 @@ export class ModalTransactionConfirmationTs extends Vue {
         const service = new TransactionAnnouncerService(this.$store);
         this.command.announceHashAndAggregateBonded(service, signedKeyLinkTransactions).subscribe((res) => {
             if (res.success) {
-                const accountAddress = this.command.currentSignerHarvestingModel.accountAddress;
                 if (!!res.transaction?.innerTransactions) {
                     // @ts-ignore
                     res.transaction?.innerTransactions.forEach((val) => {
@@ -840,10 +808,6 @@ export class ModalTransactionConfirmationTs extends Vue {
                         isPersistentDelReqSent: false,
                     });
                 }
-                this.$store.dispatch('harvesting/UPDATE_ACCOUNT_SELECTED_HARVESTING_NODE', {
-                    accountAddress,
-                    selectedHarvestingNode: this.command.formItems.nodeModel,
-                });
             }
         });
         this.show = false;
@@ -932,5 +896,63 @@ export class ModalTransactionConfirmationTs extends Vue {
     public onConfirmationSuccess() {
         this.$store.dispatch('notification/ADD_SUCCESS', 'success_transactions_signed');
         this.$emit('success');
+    }
+
+    private saveVrfKeyInfo(accountAddress: string, newEncVrfPrivateKey: string, newVrfPublicKey: string) {
+        this.$store.dispatch('harvesting/UPDATE_NEW_VRF_KEY_INFO', { accountAddress, newEncVrfPrivateKey, newVrfPublicKey });
+    }
+
+    private saveRemoteKeyInfo(accountAddress: string, newEncRemotePrivateKey: string, newRemotePublicKey: string) {
+        this.$store.dispatch('harvesting/UPDATE_NEW_REMOTE_KEY_INFO', {
+            accountAddress,
+            newEncRemotePrivateKey,
+            newRemotePublicKey,
+        });
+    }
+
+    private saveHarvestingNode(accountAddress: string, harvestingNode: NodeModel) {
+        this.$store.dispatch('harvesting/UPDATE_ACCOUNT_SELECTED_HARVESTING_NODE', {
+            accountAddress,
+            selectedHarvestingNode: harvestingNode,
+        });
+
+        // store announced harvesting node in local storage.
+        // it can be use when connection interrupt or waiting for co-signature.
+        this.$store.dispatch('harvesting/UPDATE_ACCOUNT_NEW_SELECTED_HARVESTING_NODE', {
+            accountAddress,
+            newSelectedHarvestingNode: harvestingNode,
+        });
+    }
+
+    /**
+     * Pre store harvesting key info in local;
+     * @param accountAddress
+     */
+    private preStoreHarvestingKeyInfo(accountAddress: string): void {
+        // store new vrf Key info in local
+        if (this.command?.vrfPrivateKeyTemp) {
+            this.saveVrfKeyInfo(
+                accountAddress,
+                Crypto.encrypt(this.command.newVrfKeyAccount.privateKey, this.command.password),
+                this.command.newVrfKeyAccount.publicKey,
+            );
+        }
+
+        // store new remote Key info in local
+        if (this.command?.remotePrivateKeyTemp) {
+            this.saveRemoteKeyInfo(
+                accountAddress,
+                Crypto.encrypt(this.command.newRemoteAccount.privateKey, this.command.password),
+                this.command.newRemoteAccount.publicKey,
+            );
+        }
+
+        // // pre-store selected harvesting node in local
+        this.saveHarvestingNode(accountAddress, this.command.formItems.nodeModel);
+    }
+
+    protected createDeadline(deadlineInHours = 2): Deadline {
+        const deadline = Deadline.create(this.epochAdjustment, deadlineInHours);
+        return Deadline.createFromAdjustedValue(deadline.adjustedValue + this.clientServerTimeDifference);
     }
 }

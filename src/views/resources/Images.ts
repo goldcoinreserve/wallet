@@ -46,6 +46,8 @@ import dashboardUnconfirmed from '@/views/resources/img/monitor/dash-board/dashb
 // @ts-ignore
 import dashboardConfirmed from '@/views/resources/img/monitor/dash-board/dashboardConfirmed.png';
 // @ts-ignore
+import optinLogo from '@/views/resources/img/optin.png';
+// @ts-ignore
 import windowDashboard from '@/views/resources/img/window/windowDashboard.png';
 // @ts-ignore
 import windowDashboardActive from '@/views/resources/img/window/windowDashboardActive.png';
@@ -133,6 +135,8 @@ import encryptedMessage from '@/views/resources/img/icons/encrypted-message.png'
 // @ts-ignore
 import enterprise from '@/views/resources/img/icons/enterprise.png';
 // @ts-ignore
+import envelope from '@/views/resources/img/icons/envelope.png';
+// @ts-ignore
 import explorer from '@/views/resources/img/newicons/NavExplorer.svg';
 // @ts-ignore
 import fingerprint from '@/views/resources/img/icons/fingerprint.png';
@@ -150,6 +154,8 @@ import message from '@/views/resources/img/icons/message.png';
 import metadata from '@/views/resources/img/icons/metadata.png';
 // @ts-ignore
 import mosaic from '@/views/resources/img/icons/mosaic.svg';
+// @ts-ignore
+import mosaics from '@/views/resources/img/icons/mosaics.png';
 // @ts-ignore
 import mosaicTransaction from '@/views/resources/img/icons/mosaic.png';
 // @ts-ignore
@@ -176,6 +182,8 @@ import nodes from '@/views/resources/img/icons/nodes.png';
 import notMultisig from '@/views/resources/img/icons/not-multisig.png';
 // @ts-ignore
 import outgoing from '@/views/resources/img/icons/outgoing.png';
+// @ts-ignore
+import optinTransaction from '@/views/resources/img/icons/optin-transaction.png';
 // @ts-ignore
 import pending from '@/views/resources/img/icons/pending.png';
 // @ts-ignore
@@ -310,6 +318,7 @@ export const officialIcons = {
     delegatedHarvesting,
     encryptedMessage,
     enterprise,
+    envelope,
     explorer,
     fingerprint,
     harvest,
@@ -319,6 +328,7 @@ export const officialIcons = {
     message,
     metadata,
     mosaic,
+    mosaics,
     mosaicRestriction,
     mosaicTransaction,
     multipleParties,
@@ -332,6 +342,7 @@ export const officialIcons = {
     nodes,
     notMultisig,
     outgoing,
+    optinTransaction,
     pending,
     privateChain,
     privateKey,
@@ -362,6 +373,10 @@ export const officialIcons = {
     infoWhite,
 };
 
+export const optinImages = {
+    optinLogo,
+};
+
 export const transactionTypeToIcon = {
     [TransactionType.NAMESPACE_REGISTRATION]: officialIcons.namespaceTransaction,
     [TransactionType.ADDRESS_ALIAS]: officialIcons.alias,
@@ -371,6 +386,7 @@ export const transactionTypeToIcon = {
     [TransactionType.MULTISIG_ACCOUNT_MODIFICATION]: officialIcons.multipleParties,
     [TransactionType.AGGREGATE_COMPLETE]: officialIcons.aggregateTransaction,
     [TransactionType.AGGREGATE_BONDED]: officialIcons.aggregateTransaction,
+    [TransactionType.AGGREGATE_BONDED + '_optin']: optinTransaction,
     [TransactionType.HASH_LOCK]: officialIcons.lock,
     [TransactionType.SECRET_LOCK]: officialIcons.lock,
     [TransactionType.SECRET_PROOF]: officialIcons.lock,

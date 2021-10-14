@@ -51,10 +51,9 @@ import ModalMetadataDisplay from '@/views/modals/ModalMetadataDisplay/ModalMetad
 import { NamespaceModel } from '@/core/database/entities/NamespaceModel';
 import { MosaicModel } from '@/core/database/entities/MosaicModel';
 import { NetworkConfigurationModel } from '@/core/database/entities/NetworkConfigurationModel';
-import { AccountModel } from '@/core/database/entities/AccountModel';
 import { Signer } from '@/store/Account';
 // @ts-ignore
-import SignerFilter from '@/components/SignerFilter/SignerFilter.vue';
+import SignerListFilter from '@/components/SignerListFilter/SignerListFilter.vue';
 import { MetadataModel } from '@/core/database/entities/MetadataModel';
 // @ts-ignore
 import ModalMetadataUpdate from '@/views/modals/ModalMetadataUpdate/ModalMetadataUpdate.vue';
@@ -67,7 +66,7 @@ import { PageInfo } from '@/store/Transaction';
         FormExtendNamespaceDurationTransaction,
         FormMosaicSupplyChangeTransaction,
         ModalMetadataDisplay,
-        SignerFilter,
+        SignerListFilter,
         ButtonAdd,
         ModalMetadataUpdate,
         ButtonRefresh,
@@ -75,13 +74,13 @@ import { PageInfo } from '@/store/Transaction';
     computed: {
         ...mapGetters({
             currentHeight: 'network/currentHeight',
-            currentAccount: 'account/currentAccount',
             holdMosaics: 'mosaic/holdMosaics',
             ownedNamespaces: 'namespace/ownedNamespaces',
             currentConfirmedPage: 'namespace/currentConfirmedPage',
             attachedMetadataList: 'metadata/accountMetadataList',
             networkConfiguration: 'network/networkConfiguration',
-            signers: 'account/signers',
+            currentAccountSigner: 'account/currentAccountSigner',
+            currentSigner: 'account/currentSigner',
             isFetchingNamespaces: 'namespace/isFetchingNamespaces',
             isFetchingMosaics: 'mosaic/isFetchingMosaics',
             isFetchingMetadata: 'metadata/isFetchingMetadata',
@@ -128,16 +127,16 @@ export class TableDisplayTs extends Vue {
      */
     protected targetedMetadataList: MetadataModel[];
 
-    private currentAccount: AccountModel;
-
     private currentHeight: number;
 
     private networkConfiguration: NetworkConfigurationModel;
 
+    private currentSigner: Signer;
+
     /**
-     * current signers
+     * current account signer
      */
-    public signers: Signer[];
+    public currentAccountSigner: Signer;
 
     public isFetchingNamespaces: boolean;
 
@@ -217,7 +216,7 @@ export class TableDisplayTs extends Vue {
         return this.assetType === 'namespace'
             ? this.ownedNamespaces.map(({ namespaceIdHex }) => namespaceIdHex)
             : this.holdMosaics
-                  .filter(({ ownerRawPlain }) => ownerRawPlain === this.currentAccount.address)
+                  .filter(({ ownerRawPlain }) => ownerRawPlain === this.currentSigner.address.plain())
                   .map(({ mosaicIdHex }) => mosaicIdHex);
     }
 
@@ -274,7 +273,7 @@ export class TableDisplayTs extends Vue {
                 return new MosaicTableService(this.currentHeight, this.holdMosaics, this.networkConfiguration);
 
             case TableAssetType.Namespace:
-                return new NamespaceTableService(this.currentHeight, this.ownedNamespaces, this.networkConfiguration);
+                return new NamespaceTableService(this.currentHeight, this.ownedNamespaces, this.networkConfiguration, this.showExpired);
 
             case TableAssetType.Metadata:
                 return new MetadataTableService(this.currentHeight, this.attachedMetadataList, this.networkConfiguration);

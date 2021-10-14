@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and limitations under the License.
  *
  */
-// external dependencies
 // @ts-ignore
 import ButtonAdd from '@/components/ButtonAdd/ButtonAdd';
 // @ts-ignore
-import SignerFilter from '@/components/SignerFilter/SignerFilter.vue';
+import SignerListFilter from '@/components/SignerListFilter/SignerListFilter.vue';
 // @ts-ignore
 import { TableAssetType } from '@/components/TableDisplay/TableAssetType';
 // @ts-ignore
@@ -42,6 +41,7 @@ import ModalFormWrap from '@/views/modals/ModalFormWrap/ModalFormWrap.vue';
 import ModalMetadataDisplay from '@/views/modals/ModalMetadataDisplay/ModalMetadataDisplay.vue';
 // @ts-ignore
 import ModalMetadataUpdate from '@/views/modals/ModalMetadataUpdate/ModalMetadataUpdate.vue';
+// external dependencies
 import { Address } from 'symbol-sdk';
 import { Component, Prop, Watch } from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
@@ -60,7 +60,7 @@ export type AccountRestrictionTableField = {
         FormExtendNamespaceDurationTransaction,
         FormMosaicSupplyChangeTransaction,
         ModalMetadataDisplay,
-        SignerFilter,
+        SignerListFilter,
         ButtonAdd,
         ModalMetadataUpdate,
     },

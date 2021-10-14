@@ -212,6 +212,9 @@ export class FormMetadataCreationTs extends FormTransactionBase {
     protected getTransactionCommandMode(): TransactionCommandMode {
         const target = this.getTargetAddress().plain();
         if (this.selectedSigner.multisig) {
+            if (this.requiredCosignatures === 1 && this.formItems.signerAddress === target) {
+                return TransactionCommandMode.AGGREGATE;
+            }
             return TransactionCommandMode.MULTISIGN;
         } else if (this.formItems.signerAddress === target) {
             return TransactionCommandMode.AGGREGATE;
@@ -230,7 +233,7 @@ export class FormMetadataCreationTs extends FormTransactionBase {
         if (!this.selectedSigner.multisig && this.formItems.signerAddress !== this.getTargetAddress().plain()) {
             return 1;
         }
-        return this.currentSignerMultisigInfo ? this.currentSignerMultisigInfo.minApproval : this.selectedSigner.requiredCosignatures;
+        return this.selectedSigner.requiredCosigApproval;
     }
 
     /**
@@ -383,5 +386,14 @@ export class FormMetadataCreationTs extends FormTransactionBase {
         if (this.editMode && this.value) {
             this.updateFormItems(this.value);
         }
+    }
+
+    /**
+     * Hook called when a signer is changed.
+     * @param {string} address
+     */
+    public async onMetadataSignerChanged(address: string) {
+        await this.onChangeSigner(address);
+        this.formItems.targetId = '';
     }
 }

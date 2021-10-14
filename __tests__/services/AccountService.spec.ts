@@ -169,7 +169,7 @@ describe('services/AccountService_Test', () => {
         test('generate correct account given mnemonic and paths', () => {
             const accounts = new AccountService().generateAccountsFromPaths(
                 mnemonic,
-                NetworkType.MAIN_NET,
+                NetworkType.TEST_NET,
                 Object.values(standardPaths_Test).slice(0, 1),
             );
 
@@ -198,7 +198,7 @@ describe('services/AccountService_Test', () => {
 
     describe('getAccountByPath() should', () => {
         test('generate correct account given mnemonic and path', () => {
-            const account_3 = new AccountService().getAccountByPath(mnemonic, NetworkType.MAIN_NET, standardPaths_Test[3]);
+            const account_3 = new AccountService().getAccountByPath(mnemonic, NetworkType.TEST_NET, standardPaths_Test[3]);
 
             expect(account_3.privateKey).toBe(expectedAccounts_Test[2].privateKey);
         });

@@ -27,7 +27,7 @@ import { corsAxios } from '@bridged.xyz/client-sdk'
 const request = async (): Promise<string> => {
     let feedUrl = appConfig.articlesFeedUrl;
     if (process.env.NODE_ENV === 'development')
-    feedUrl = "https://cors.bridged.cc/https://cryptonews.com/news/feed"
+        feedUrl = "https://api.codetabs.com/v1/proxy/?quest=https://cryptonews.com/news/feed"
     const response = await corsAxios.get(feedUrl);
     return response.data;
 };

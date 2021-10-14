@@ -249,14 +249,11 @@ export class FormNamespaceRegistrationTransactionTs extends FormTransactionBase 
     }
 
     /**
-     * Resetting the form when choosing a multisig signer and changing multisig signer
-     * Is necessary to make the mosaic inputs reactive
+     * Hook called when a signer is selected.
+     * @param {string} address
      */
-    @Watch('selectedSigner')
-    onSelectedSignerChange() {
-        this.formItems.signerAddress = this.selectedSigner.address.plain();
-        if (this.isMultisigMode()) {
-            this.resetForm();
-        }
+    public async signerChanged(address: string) {
+        await this.onChangeSigner(address);
+        this.resetForm();
     }
 }

@@ -96,8 +96,8 @@
 
             <AddCosignatoryInput v-if="isAddingCosignatory" @added="onAddCosignatory" />
             <div v-if="!isAddingCosignatory" class="row-cosignatory-modification-display inputs-container link mx-1">
-                <img src="@/views/resources/img/newicons/Add.svg" class="icon-left-button clickable" @click="isAddingCosignatory = true" />
-                <a href="#" style=" color: #004f99;" @click="isAddingCosignatory = true">{{ $t('form_label_add_cosignatory') }}</a>
+                <ButtonAdd class="clickable" :size="24" @click="isAddingCosignatory = true" />
+                <a href="#" style="color: #004f99;" @click="isAddingCosignatory = true">{{ $t('form_label_add_cosignatory') }}</a>
             </div>
         </div>
     </div>
@@ -126,7 +126,6 @@ export default class MultisigCosignatoriesDisplay extends MultisigCosignatoriesD
 }
 
 /deep/ .inputs-container {
-    overflow: auto !important;
     height: auto;
 }
 </style>

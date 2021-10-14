@@ -16,10 +16,9 @@
 // external dependencies
 import { MultisigAccountInfo, MultisigAccountModificationTransaction, UInt64, Address } from 'symbol-sdk';
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import { ValidationObserver, ValidationProvider } from 'vee-validate';
 // internal dependencies
 import { FormTransactionBase } from '@/views/forms/FormTransactionBase/FormTransactionBase';
-// child components
-import { ValidationObserver, ValidationProvider } from 'vee-validate';
 // @ts-ignore
 import FormWrapper from '@/components/FormWrapper/FormWrapper.vue';
 // @ts-ignore
@@ -128,8 +127,10 @@ export class FormMultisigAccountModificationTransactionTs extends FormTransactio
         this.formItems.minApprovalDelta = !!this.minApprovalDelta ? this.minApprovalDelta : defaultMinApprovalDelta;
         this.formItems.minRemovalDelta = !!this.minRemovalDelta ? this.minRemovalDelta : defaultMinRemovalDelta;
         this.formItems.cosignatoryModifications = {};
-        if (!!this.currentAccount) {
-            this.formItems.signerAddress = this.currentAccount.address; // always select current account on form reset
+        if (!!this.selectedSigner) {
+            this.formItems.signerAddress = this.selectedSigner.address.plain();
+        } else if (!!this.currentAccount) {
+            this.formItems.signerAddress = this.currentAccount.address;
         }
 
         // - maxFee must be absolute
@@ -424,30 +425,34 @@ export class FormMultisigAccountModificationTransactionTs extends FormTransactio
      */
     protected get requiredCosignatures(): number {
         if (this.multisigOperationType === 'conversion') {
-            return this.addressAdditions.length;
+            return this.addressAdditions.length + 1;
         }
         // proceed if modification
 
-        // if nothing is changed in the form or minApprovalDelta != 0 then the default value will be existing minApproval
-        let requiredCosignatures = this.currentMultisigInfo.minApproval;
+        let reqCosignatures = 1;
+
+        if (this.addressDeletions.length > 0) {
+            reqCosignatures = this.selectedSigner.requiredCosigRemoval;
+        }
 
         if (this.addressAdditions.length > 0) {
             /*
-      this is an edge case, since the new additions signatures are mandatory, there might be a case
-      where all the existing cosignatories sign their parts before new additions do.
-      So in order to stay safe we are adding all the cosignatories including the new additions.
-      */
-            requiredCosignatures = this.currentMultisigInfo.cosignatoryAddresses.length + this.addressAdditions.length;
-        } else {
-            if (
-                (this.formItems.minRemovalDelta != 0 || this.addressDeletions.length > 0) &&
-                this.currentMultisigInfo.minRemoval > requiredCosignatures
-            ) {
-                requiredCosignatures = this.currentMultisigInfo.minRemoval;
-            }
+          this is an edge case, since the new additions signatures are mandatory, there might be a case
+          where all the existing cosignatories sign their parts before new additions do.
+          So in order to stay safe we are adding all the cosignatories including the new additions.
+          */
+            reqCosignatures = Math.max(
+                this.currentMultisigInfo.cosignatoryAddresses.length + this.addressAdditions.length,
+                reqCosignatures,
+            );
         }
 
-        return requiredCosignatures;
+        if (!this.addressDeletions.length && !this.addressAdditions.length) {
+            // only removal or approval changes, no address additions or deletions
+            reqCosignatures = this.selectedSigner.requiredCosigApproval;
+        }
+
+        return reqCosignatures;
     }
 
     /**

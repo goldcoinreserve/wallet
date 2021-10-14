@@ -84,9 +84,12 @@
                             </ValidationProvider>
 
                             <div class="password-tip">
-                                <span class="prompt pointer" @click="formItems.hasHint = !formItems.hasHint">{{
-                                    $t('password_hint')
-                                }}</span>
+                                <span
+                                    v-if="!!getPasswordHint().length"
+                                    class="prompt pointer"
+                                    @click="formItems.hasHint = !formItems.hasHint"
+                                    >{{ $t('password_hint') }}</span
+                                >
                                 <span
                                     class="pointer create-profile"
                                     :class="{ disabled: performingLogin }"
@@ -98,7 +101,7 @@
                                         }
                                     "
                                 >
-                                    {{ $t('create_a_new_account') }}?
+                                    {{ $t('create_a_new_account') }}
                                 </span>
                             </div>
                             <div v-if="formItems.hasHint && !!getPasswordHint().length" class="hint">

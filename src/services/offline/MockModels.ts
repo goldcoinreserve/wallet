@@ -32,7 +32,8 @@ export const OfflineGenerationHash = {
     [NetworkType.MAIN_NET]: networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.generationHash,
 };
 
-export const OfflineTransactionFees = new TransactionFees(84587, 100, 1136363, 0, 0);
+// use 100 as min fee multiplier for offline transaction.
+export const OfflineTransactionFees = new TransactionFees(84587, 100, 1136363, 0, 100);
 
 export const OfflineNodeInfo = (networkType: NetworkType) =>
     new NodeInfo('pubkey', OfflineGenerationHash[networkType], 3000, networkType, 0, [], 'host', 'name');
@@ -49,8 +50,8 @@ export const OfflineNetworkProperties = {
         new ChainProperties(
             true,
             true,
-            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.currencyMosaicId,
-            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.harvestingMosaicId,
+            '0x' + networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.currencyMosaicId,
+            '0x' + networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.harvestingMosaicId,
             networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.blockGenerationTargetTime + 's',
             '3000',
             '180',
@@ -73,6 +74,45 @@ export const OfflineNetworkProperties = {
             '25',
             '5',
             'TDGY4DD2U4YQQGERFMDQYHPYS6M7LHIF6XUCJ4Q',
+            "6'000",
+        ),
+        new PluginProperties(),
+    ),
+    [NetworkType.MAIN_NET]: new NetworkConfiguration(
+        new NetworkProperties(
+            'public',
+            NodeIdentityEqualityStrategy.Host,
+            '78F0F6FFDE5C130777506FE2A597ADC5E98BD46041ABF775908299FE94BFD5D0',
+            OfflineGenerationHash[NetworkType.MAIN_NET],
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.epochAdjustment + 's',
+        ),
+        new ChainProperties(
+            true,
+            true,
+            '0x' + networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.currencyMosaicId,
+            '0x' + networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.harvestingMosaicId,
+            networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.blockGenerationTargetTime + 's',
+            '3000',
+            '180',
+            '5',
+            '0',
+            '60',
+            "1'000",
+            '6h',
+            '500ms',
+            "7'831'975'436'000'000",
+            "9'000'000'000'000'000",
+            `${networkConfig[NetworkType.MAIN_NET].networkConfigurationDefaults.maxMosaicAtomicUnits}`,
+            "10'000'000'000",
+            "50'000'000'000'000",
+            "3'000'000'000'000",
+            "3'000'000'000'000",
+            '3',
+            '28',
+            '26280',
+            '25',
+            '5',
+            'NAMV77WU2EUFC6FBDFBQCDQARAGUTCRFDN7YLVA',
             "6'000",
         ),
         new PluginProperties(),

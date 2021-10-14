@@ -32,6 +32,8 @@ import _ from 'lodash';
 import { Subscription } from 'rxjs';
 import {
     BlockInfo,
+    Deadline,
+    DeadlineService,
     IListener,
     Listener,
     NetworkType,
@@ -92,10 +94,10 @@ interface NetworkState {
     rentalFeeEstimation: RentalFees;
     networkIsNotMatchingProfile: boolean;
     peerNodes: NodeInfo[];
-    harvestingPeerNodes: NodeInfo[];
     connectingToNodeInfo: ConnectingToNodeInfo;
     isOfflineMode: boolean;
     feesConfig: any;
+    clientServerTimeDifference: number;
 }
 
 const initialNetworkState: NetworkState = {
@@ -117,10 +119,10 @@ const initialNetworkState: NetworkState = {
     epochAdjustment: undefined,
     networkIsNotMatchingProfile: false,
     peerNodes: [],
-    harvestingPeerNodes: [],
     connectingToNodeInfo: undefined,
     isOfflineMode: false,
     feesConfig: undefined,
+    clientServerTimeDifference: undefined,
 };
 
 export default {
@@ -145,10 +147,10 @@ export default {
         rentalFeeEstimation: (state: NetworkState) => state.rentalFeeEstimation,
         networkIsNotMatchingProfile: (state: NetworkState) => state.networkIsNotMatchingProfile,
         peerNodes: (state: NetworkState) => state.peerNodes,
-        harvestingPeerNodes: (state: NetworkState) => state.harvestingPeerNodes,
         connectingToNodeInfo: (state: NetworkState) => state.connectingToNodeInfo,
         isOfflineMode: (state: NetworkState) => state.isOfflineMode,
         feesConfig: (state: NetworkState) => state.feesConfig,
+        clientServerTimeDifference: (state: NetworkState) => state.clientServerTimeDifference,
     },
     mutations: {
         setInitialized: (state: NetworkState, initialized: boolean) => {
@@ -183,34 +185,34 @@ export default {
             Vue.set(state, 'networkIsNotMatchingProfile', networkIsNotMatchingProfile);
         },
 
-        addPeer: (state: NetworkState, peerUrl: string) => {
+        addPeer: (state: NetworkState, { peerUrl, profile }) => {
             const knowNodes: NodeModel[] = state.knowNodes;
             const existNode = knowNodes.find((p: NodeModel) => p.url === peerUrl);
             if (existNode) {
                 return;
             }
             const newNodes = [...knowNodes, new NodeModel(peerUrl, '', false, state.networkType)];
-            new NodeService().saveNodes(newNodes);
+            new NodeService().saveNodes(profile, newNodes);
             Vue.set(state, 'knowNodes', newNodes);
         },
-        removePeer: (state: NetworkState, peerUrl: string) => {
+        removePeer: (state: NetworkState, { peerUrl, profile }) => {
             const knowNodes: NodeModel[] = state.knowNodes;
             const toBeDeleted = knowNodes.find((p: NodeModel) => p.url === peerUrl);
             if (!toBeDeleted) {
                 return;
             }
             const newNodes = knowNodes.filter((n) => n !== toBeDeleted);
-            new NodeService().saveNodes(newNodes);
+            new NodeService().saveNodes(profile, newNodes);
             Vue.set(state, 'knowNodes', newNodes);
         },
-        updateNode: (state: NetworkState, node: NodeModel) => {
+        updateNode: (state: NetworkState, { node, profile }) => {
             const knowNodes: NodeModel[] = state.knowNodes;
             const toBeUpdated = knowNodes.find((p: NodeModel) => p.url === node.url);
             if (!toBeUpdated) {
                 return;
             }
             const newNodes = knowNodes.map((n) => (n.url === node.url ? node : n));
-            new NodeService().saveNodes(newNodes);
+            new NodeService().saveNodes(profile, newNodes);
             Vue.set(state, 'knowNodes', newNodes);
         },
         subscriptions: (state: NetworkState, data) => Vue.set(state, 'subscriptions', data),
@@ -219,12 +221,13 @@ export default {
             Vue.set(state, 'subscriptions', [...subscriptions, payload]);
         },
         peerNodes: (state: NetworkState, peerNodes: NodeInfo[]) => Vue.set(state, 'peerNodes', peerNodes),
-        harvestingPeerNodes: (state: NetworkState, harvestingPeerNodes: NodeInfo[]) =>
-            Vue.set(state, 'harvestingPeerNodes', harvestingPeerNodes),
         connectingToNodeInfo: (state: NetworkState, connectingToNodeInfo: ConnectingToNodeInfo) =>
             Vue.set(state, 'connectingToNodeInfo', connectingToNodeInfo),
         setFeesConfig: (state: NetworkState, feesConfig: {}) => {
             Vue.set(state, 'feesConfig', feesConfig);
+        },
+        setClientServerTimeDifference: (state: NetworkState, clientServerTimeDifference: number) => {
+            Vue.set(state, 'clientServerTimeDifference', clientServerTimeDifference);
         },
     },
     actions: {
@@ -369,7 +372,7 @@ export default {
             const nodeService = new NodeService();
             const oldGenerationHash = getters['generationHash'];
             const networkType = networkModel.networkType;
-            const getNodesPromise = nodeService.getNodes(repositoryFactory, networkModel.url, networkType).toPromise();
+            const getNodesPromise = nodeService.getNodes(currentProfile, repositoryFactory, networkModel.url).toPromise();
             const getBlockchainHeightPromise = repositoryFactory.createChainRepository().getChainInfo().toPromise();
             const nodes = await getNodesPromise;
             const currentHeight = (await getBlockchainHeightPromise).height.compact();
@@ -409,6 +412,7 @@ export default {
                 nodes.find((n) => n.url === networkModel.url),
             );
             commit('setConnected', true);
+            await dispatch('SET_CLIENT_SERVER_TIME_DIFFERENCE');
             commit('connectingToNodeInfo', {
                 isTryingToConnect: false,
             });
@@ -502,22 +506,29 @@ export default {
         SET_NETWORK_IS_NOT_MATCHING_PROFILE({ commit }, networkIsNotMatchingProfile) {
             commit('networkIsNotMatchingProfile', networkIsNotMatchingProfile);
         },
-        ADD_KNOWN_PEER({ commit }, peerUrl) {
+        async ADD_KNOWN_PEER({ commit, rootGetters, dispatch }, peerUrl) {
             if (!UrlValidator.validate(peerUrl)) {
                 throw Error('Cannot add node. URL is not valid: ' + peerUrl);
             }
-            commit('addPeer', peerUrl);
+            const profile: ProfileModel = rootGetters['profile/currentProfile'];
+            commit('addPeer', { peerUrl, profile });
+            const repositoryFactory = rootGetters['network/repositoryFactory'];
+            const isConnected = rootGetters['network/isConnected'];
+            if (!repositoryFactory || !isConnected) {
+                await dispatch('SET_CURRENT_PEER', peerUrl);
+            }
         },
-        REMOVE_KNOWN_PEER({ commit }, peerUrl) {
-            commit('removePeer', peerUrl);
+        REMOVE_KNOWN_PEER({ commit, rootGetters }, peerUrl) {
+            const profile: ProfileModel = rootGetters['profile/currentProfile'];
+            commit('removePeer', { peerUrl, profile });
         },
 
         async UPDATE_PEER({ commit, rootGetters }, peerUrl) {
             const repositoryFactory = new RepositoryFactoryHttp(peerUrl);
             const nodeService = new NodeService();
-            const networkType = rootGetters['network/networkType'];
+            const currentProfile: ProfileModel = rootGetters['profile/currentProfile'];
 
-            const knownNodes = await nodeService.getNodes(repositoryFactory, peerUrl, networkType).toPromise();
+            const knownNodes = await nodeService.getNodes(currentProfile, repositoryFactory, peerUrl).toPromise();
             commit('knowNodes', knownNodes);
         },
 
@@ -533,10 +544,25 @@ export default {
         async LOAD_PEER_NODES({ commit, rootGetters }) {
             const repositoryFactory: RepositoryFactory = rootGetters['network/repositoryFactory'];
             const nodeRepository = repositoryFactory.createNodeRepository();
-
             const peerNodes: NodeInfo[] = await nodeRepository.getNodePeers().toPromise();
-            const allNodes = peerNodes.sort((a, b) => a.host.localeCompare(b.host));
-            commit('peerNodes', _.uniqBy(allNodes, 'host'));
+            commit('peerNodes', _.uniqBy(peerNodes, 'host'));
+        },
+        // set current difference between server and local time
+        async SET_CLIENT_SERVER_TIME_DIFFERENCE({ getters, commit }) {
+            const isOffline = getters['isOfflineMode'];
+            // using server time for online transactions
+            if (!isOffline) {
+                const repositoryFactory: RepositoryFactory = getters['repositoryFactory'] as RepositoryFactory;
+                const epochAdjustment = getters['epochAdjustment'];
+                const serverDeadline = await (await DeadlineService.create(repositoryFactory)).createDeadlineUsingServerTime();
+                const localDeadline = Deadline.create(epochAdjustment);
+                const adjustedDifference = serverDeadline.adjustedValue - localDeadline.adjustedValue;
+                commit('setClientServerTimeDifference', adjustedDifference);
+            }
+            // using local time in offline transactions
+            else {
+                commit('setClientServerTimeDifference', 0);
+            }
         },
         // TODO :: re-apply that behavior if red screen issue fixed
         // load nodes that eligible for delegate harvesting
@@ -614,12 +640,21 @@ export default {
         },
 
         LOAD_TRANSACTION_FEES({ commit, rootGetters }) {
+            commit('setFeesConfig', feesConfig);
             const repositoryFactory: RepositoryFactory = rootGetters['network/repositoryFactory'];
             const networkRepository = repositoryFactory.createNetworkRepository();
             networkRepository.getTransactionFees().subscribe((fees: TransactionFees) => {
-                commit('transactionFees', fees);
+                commit(
+                    'transactionFees',
+                    new TransactionFees(
+                        fees.averageFeeMultiplier < fees.minFeeMultiplier ? fees.minFeeMultiplier : fees.averageFeeMultiplier,
+                        fees.medianFeeMultiplier < fees.minFeeMultiplier ? fees.minFeeMultiplier : fees.medianFeeMultiplier,
+                        fees.highestFeeMultiplier,
+                        fees.lowestFeeMultiplier,
+                        fees.minFeeMultiplier,
+                    ),
+                );
             });
-            commit('setFeesConfig', feesConfig);
         },
     },
 };

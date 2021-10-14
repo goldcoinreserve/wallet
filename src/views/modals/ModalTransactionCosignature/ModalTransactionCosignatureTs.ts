@@ -16,6 +16,7 @@
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import {
     Account,
+    Address,
     AccountAddressRestrictionTransaction,
     AggregateTransaction,
     AggregateTransactionCosignature,
@@ -25,6 +26,7 @@ import {
     NetworkType,
     TransactionStatus,
     TransactionType,
+    TransferTransaction,
 } from 'symbol-sdk';
 import { mapGetters } from 'vuex';
 
@@ -35,6 +37,8 @@ import { AccountTransactionSigner, TransactionAnnouncerService, TransactionSigne
 // @ts-ignore
 import TransactionDetails from '@/components/TransactionDetails/TransactionDetails.vue';
 // @ts-ignore
+import TransactionOptinPayoutDetails from '@/components/TransactionDetails/TransactionOptinPayoutDetails.vue';
+// @ts-ignore
 import FormProfileUnlock from '@/views/forms/FormProfileUnlock/FormProfileUnlock.vue';
 // @ts-ignore
 import HardwareConfirmationButton from '@/components/HardwareConfirmationButton/HardwareConfirmationButton.vue';
@@ -44,10 +48,11 @@ import QRCodeDisplay from '@/components/QRCode/QRCodeDisplay/QRCodeDisplay.vue';
 import { AccountService } from '@/services/AccountService';
 import { LedgerService } from '@/services/LedgerService';
 import { AccountMetadataTransaction } from 'symbol-sdk';
-
+import { MultisigService } from '@/services/MultisigService';
 @Component({
     components: {
         TransactionDetails,
+        TransactionOptinPayoutDetails,
         FormProfileUnlock,
         HardwareConfirmationButton,
         QRCodeDisplay,
@@ -59,6 +64,8 @@ import { AccountMetadataTransaction } from 'symbol-sdk';
             networkType: 'network/networkType',
             generationHash: 'network/generationHash',
             currentAccountMultisigInfo: 'account/currentAccountMultisigInfo',
+            multisigAccountGraphInfo: 'account/multisigAccountGraphInfo',
+            multisigAccountGraph: 'account/multisigAccountGraph',
         }),
     },
 })
@@ -78,6 +85,7 @@ export class ModalTransactionCosignatureTs extends Vue {
      */
     transaction: AggregateTransaction = null;
 
+    public multisigAccountGraphInfo: MultisigAccountInfo[][];
     /**
      * Data is loading
      */
@@ -117,10 +125,19 @@ export class ModalTransactionCosignatureTs extends Vue {
      */
     public currentAccountMultisigInfo: MultisigAccountInfo;
 
+    public multisigAccountGraph: Map<number, MultisigAccountInfo[]>;
+
     /**
      * Whether transaction has expired
      */
     public expired: boolean = false;
+
+    /**
+     * Whether to hide unknown cosigner warning
+     */
+    public hideCosignerWarning = false;
+
+    public wantToProceed = false;
 
     /// region computed properties
     /**
@@ -141,6 +158,56 @@ export class ModalTransactionCosignatureTs extends Vue {
     }
 
     /**
+     * Returns whether aggregate bonded transaction has inner Transfer with the current account address as a recipient.
+     */
+    public get isOptinTransactionContainsPayout(): boolean {
+        // Check wether the 'transaction' prop is provided.
+        if (!this.transaction) {
+            return false;
+        }
+
+        // Check wether the Aggregate Bonded has inner Transfer with the current account address as a recipient.
+        const currentAddress = this.currentAccount.address;
+        const innerTransferTransaction = this.transaction.innerTransactions.find(
+            (innerTransaction) =>
+                innerTransaction.type === TransactionType.TRANSFER &&
+                (innerTransaction as TransferTransaction).recipientAddress?.equals(Address.createFromRawAddress(currentAddress)),
+        );
+
+        return !!innerTransferTransaction;
+    }
+
+    /**
+     * Returns whether aggregate bonded transaction is announced by NGL Finance bot
+     */
+    public get isOptinTransaction(): boolean {
+        // Check wether the 'transaction' prop is provided.
+        if (!this.transaction) {
+            return false;
+        }
+
+        // Check wether the 'transaction' is type of Aggregate Bonded.
+        if (this.transaction.type !== TransactionType.AGGREGATE_BONDED) {
+            return false;
+        }
+
+        // Check wether the Aggregate Bonded doesn't need a current account cosignature.
+        if (this.hasMissSignatures && this.needsCosignature) {
+            return false;
+        }
+
+        // Check wether the signer of the Aggregate Bonded is the NGL Finance bot.
+        const networktype = this.currentProfile.networkType === NetworkType.MAIN_NET ? 'mainnet' : 'testnet';
+        const keysFinance = process.env.KEYS_FINANCE[networktype];
+        const announcerPublicKey = this.transaction.signer.publicKey;
+        const isAnnouncerNGLFinance = keysFinance.find(
+            (financePublicKey) => financePublicKey.toUpperCase() === announcerPublicKey.toUpperCase(),
+        );
+
+        return isAnnouncerNGLFinance;
+    }
+
+    /**
      * Returns whether current account is a hardware wallet
      * @return {boolean}
      */
@@ -154,23 +221,47 @@ export class ModalTransactionCosignatureTs extends Vue {
     }
 
     public get needsCosignature(): boolean {
+        if (this.currentAccountMultisigInfo && this.currentAccountMultisigInfo.isMultisig()) {
+            return false;
+        }
         // Multisig account can not sign
         const currentPubAccount = AccountModel.getObjects(this.currentAccount).publicAccount;
         if (!this.transaction.signedByAccount(currentPubAccount)) {
-            if (this.currentAccountMultisigInfo && this.currentAccountMultisigInfo.isMultisig()) {
-                return false;
-            }
             const cosignerAddresses = this.transaction.innerTransactions.map((t) => t.signer?.address);
             const cosignList = [];
+
+            const multisignService = new MultisigService();
+            const mutlisigChildrenTree = multisignService.getMultisigChildren(this.multisigAccountGraphInfo);
+            const mutlisigChildren = multisignService.getMultisigChildrenAddresses(this.multisigAccountGraphInfo);
+
             this.transaction.innerTransactions.forEach((t) => {
                 if (t.type === TransactionType.MULTISIG_ACCOUNT_MODIFICATION.valueOf()) {
                     cosignList.push(...(t as MultisigAccountModificationTransaction).addressAdditions);
                 } else if (t.type === TransactionType.ACCOUNT_ADDRESS_RESTRICTION.valueOf()) {
                     cosignList.push(...(t as AccountAddressRestrictionTransaction).restrictionAdditions);
                 } else if (t.type === TransactionType.ACCOUNT_METADATA) {
-                    cosignList.push((t as AccountMetadataTransaction).targetAddress);
+                    if (
+                        this.currentAccountMultisigInfo &&
+                        this.currentAccountMultisigInfo.multisigAddresses.find(
+                            (m) => m.plain() === (t as AccountMetadataTransaction).targetAddress.plain(),
+                        ) !== undefined
+                    ) {
+                        cosignList.push(Address.createFromRawAddress(this.currentAccount.address));
+                    } else {
+                        cosignList.push((t as AccountMetadataTransaction).targetAddress);
+                    }
                 }
             });
+            const msigAccModificationCurrentAddressAdded =
+                this.transaction.innerTransactions?.length === 1 &&
+                this.transaction.innerTransactions[0].type === TransactionType.MULTISIG_ACCOUNT_MODIFICATION &&
+                (this.transaction.innerTransactions[0] as MultisigAccountModificationTransaction).addressAdditions.some(
+                    (addr) => addr.plain() === this.currentAccount.address,
+                );
+            this.hideCosignerWarning =
+                msigAccModificationCurrentAddressAdded ||
+                (this.multisigAccountGraph &&
+                    MultisigService.isAddressInMultisigTree(this.multisigAccountGraph, this.transaction.signer.address.plain()));
 
             if (cosignList.find((m) => this.currentAccount.address === m.plain()) !== undefined) {
                 return true;
@@ -180,7 +271,8 @@ export class ModalTransactionCosignatureTs extends Vue {
                     return (
                         c.plain() === this.currentAccount.address ||
                         (this.currentAccountMultisigInfo &&
-                            this.currentAccountMultisigInfo.multisigAddresses.find((m) => c.equals(m)) !== undefined)
+                            this.currentAccountMultisigInfo.multisigAddresses.find((m) => c.equals(m)) !== undefined) ||
+                        (mutlisigChildrenTree && mutlisigChildren.some((address) => address.equals(c)))
                     );
                 }
                 return false;
@@ -205,7 +297,6 @@ export class ModalTransactionCosignatureTs extends Vue {
 
     public get cosignatureQrCode(): CosignatureQR {
         // @ts-ignore
-        console.log(this.transaction);
         return new CosignatureQR(this.transaction, this.networkType, this.generationHash);
     }
 

@@ -27,6 +27,7 @@ import {
     Page,
     TransactionStatus,
     Order,
+    MultisigAccountInfo,
 } from 'symbol-sdk';
 import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -35,7 +36,7 @@ import * as _ from 'lodash';
 // internal dependencies
 import { AwaitLock } from './AwaitLock';
 import { TransactionFilterService } from '@/services/TransactionFilterService';
-
+import { MultisigService } from '@/services/MultisigService';
 const Lock = AwaitLock.create();
 
 export enum TransactionGroupState {
@@ -214,8 +215,9 @@ export default {
             {
                 filterOption,
                 currentSignerAddress,
+                multisigAddresses = [],
                 shouldFilterOptionChange = true,
-            }: { filterOption?: FilterOption; currentSignerAddress: string; shouldFilterOptionChange: boolean },
+            }: { filterOption?: FilterOption; currentSignerAddress: string; multisigAddresses: []; shouldFilterOptionChange: boolean },
         ) => {
             if (shouldFilterOptionChange) {
                 if (filterOption) {
@@ -224,8 +226,10 @@ export default {
                     state.filterOptions = new TransactionFilterOptionsState();
                 }
             }
-
-            state.filteredTransactions = TransactionFilterService.filter(state, currentSignerAddress);
+            state.filteredTransactions = TransactionFilterService.filter(
+                state,
+                !!multisigAddresses.length ? multisigAddresses : currentSignerAddress,
+            );
         },
     },
     actions: {
@@ -285,6 +289,14 @@ export default {
             const subscriptions: Observable<Transaction[]>[] = [];
             commit('isFetchingTransactions', true);
 
+            const multisigAccountGraphInfo: MultisigAccountInfo[][] = rootGetters['account/multisigAccountGraphInfo'];
+            const multisignService = new MultisigService();
+            let multisigChildrenAddresses = [];
+            if (multisigAccountGraphInfo) {
+                multisigChildrenAddresses = multisignService
+                    .getMultisigChildrenAddresses(multisigAccountGraphInfo)
+                    .concat(currentSignerAddress);
+            }
             subscriptions.push(
                 subscribeTransactions(
                     TransactionGroupState.confirmed,
@@ -311,27 +323,52 @@ export default {
                         }),
                     ),
                 );
-
-                subscriptions.push(
-                    subscribeTransactions(
-                        TransactionGroupState.partial,
+                if (!!multisigChildrenAddresses.length) {
+                    const multisigTransactions: Observable<Page<Transaction>>[] = multisigChildrenAddresses.map((address) =>
                         transactionRepository.search({
                             group: TransactionGroup.Partial,
-                            address: currentSignerAddress,
+                            address: address,
                             pageSize: 100,
                             pageNumber: 1, // not paginating
                             order: Order.Desc,
                         }),
-                    ),
-                );
-            }
+                    );
+                    const combinedCallback = combineLatest(multisigTransactions).pipe(
+                        map((txs) =>
+                            txs.reduce((prev, curr) => {
+                                if (prev) {
+                                    const mergedData = [...prev.data];
+                                    // merging 2 arrays without duplicates
+                                    for (const tx of curr.data) {
+                                        if (
+                                            tx.transactionInfo.hash &&
+                                            !prev.data.some((prevTx) => tx.transactionInfo.hash === prevTx.transactionInfo.hash)
+                                        ) {
+                                            mergedData.push(tx);
+                                        }
+                                    }
+                                    return {
+                                        data: mergedData,
+                                        pageSize: mergedData.length,
+                                        pageNumber: prev.pageNumber,
+                                        isLastPage: prev.isLastPage,
+                                    };
+                                }
+                                return curr;
+                            }),
+                        ),
+                    );
 
+                    subscriptions.push(subscribeTransactions(TransactionGroupState.partial, combinedCallback));
+                }
+            }
             combineLatest(subscriptions).subscribe({
                 complete: () => {
                     commit('setAllTransactions');
                     commit('filterTransactions', {
                         filterOption: null,
                         currentSignerAddress: currentSignerAddress.plain(),
+                        multisigAddresses: multisigChildrenAddresses,
                         shouldFilterOptionChange: false,
                     });
                     commit('isFetchingTransactions', false);
@@ -425,6 +462,7 @@ export default {
                 commit('filterTransactions', {
                     filterOption: null,
                     currentSignerAddress: currentSignerAddress.plain(),
+                    multisigAddresses: [],
                     shouldFilterOptionChange: false,
                 });
             }
@@ -458,6 +496,7 @@ export default {
             commit('filterTransactions', {
                 filterOption: null,
                 currentSignerAddress: currentSignerAddress.plain(),
+                multisigAddresses: [],
                 shouldFilterOptionChange: false,
             });
         },
@@ -522,11 +561,16 @@ export default {
             // update the partial transaction cosignatures
             transactions[index] = transactions[index].addCosignatures([cosignature]);
 
-            commit('partialTransactions', transactions);
+            commit('partialTransactions', {
+                transactions: transactions,
+                refresh: true,
+                pageInfo: getters['currentConfirmedPage'],
+            });
             commit('setAllTransactions');
             commit('filterTransactions', {
                 filterOption: null,
                 currentSignerAddress: currentSignerAddress.plain(),
+                multisigAddresses: [],
                 shouldFilterOptionChange: false,
             });
         },
