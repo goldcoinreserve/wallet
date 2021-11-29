@@ -50,10 +50,10 @@ export interface NetworkConfig {
     networkConfigurationDefaults: NetworkConfigurationDefaults;
 }
 
-export const defaultMainnetNetworkConfig: NetworkConfig = {
-    explorerUrl: 'http://explorer.gcr.superhow.net/',
-    faucetUrl: 'http://faucet.gcr.superhow.net/',
-    defaultNetworkType: 104,
+export const defaultTestnetNetworkConfig: NetworkConfig = {
+    explorerUrl: 'http://explorer-testnet.gcr.superhow.net/',
+    faucetUrl: 'http://faucet-testnet.gcr.superhow.net/',
+    defaultNetworkType: 152,
     networkConfigurationDefaults: {
         maxMosaicDivisibility: 6,
         namespaceGracePeriodDuration: 2592000,
@@ -76,15 +76,48 @@ export const defaultMainnetNetworkConfig: NetworkConfig = {
         generationHash: 'FC32A39EB545DE567343C02E9A2E46C603137AAD9C70FC7DB7A379F25B63D32C',
     },
     nodes: [
-        { friendlyName: 'gcr-dual1', roles: 7, url: 'http://20.79.16.203:3000' },
-        { friendlyName: 'gcr-dual2', roles: 7, url: 'http://20.79.16.206:3000' },
-        { friendlyName: 'gcr-dual3', roles: 7, url: 'http://20.79.16.207:3000' },
+        { friendlyName: 'GCR-testnet-dual1', roles: 7, url: 'http://mainnet-dual-1.gcr.superhow.net:3000' },
+        { friendlyName: 'GCR-mainnet-dual2', roles: 7, url: 'http://mainnet-dual-2.gcr.superhow.net:3000' },
+        { friendlyName: 'GCR-mainnet-dual3', roles: 7, url: 'http://mainnet-dual-3.gcr.superhow.net:3000' },
 
     ],
 };
 
+export const defaultMainnetNetworkConfig: NetworkConfig = {
+    explorerUrl: 'http://explorer.gcr.superhow.net/',
+    faucetUrl: 'http://faucet.gcr.superhow.net/',
+    defaultNetworkType: 104,
+    networkConfigurationDefaults: {
+        maxMosaicDivisibility: 6,
+        namespaceGracePeriodDuration: 2592000,
+        lockedFundsPerAggregate: '10000000',
+        maxCosignatoriesPerAccount: 1000,
+        blockGenerationTargetTime: 15,
+        maxNamespaceDepth: 3,
+        maxMosaicDuration: 3153600000,
+        minNamespaceDuration: 60,
+        maxNamespaceDuration: 315360000,
+        maxTransactionsPerAggregate: 1000,
+        maxCosignedAccountsPerAccount: 1000,
+        maxMessageSize: 1024,
+        maxMosaicAtomicUnits: 120000000000000,
+        currencyMosaicId: '6E49B677F752FB95',
+        harvestingMosaicId: '6E49B677F752FB95',
+        defaultDynamicFeeMultiplier: 1000000,
+        epochAdjustment: 1620136092,
+        totalChainImportance: 3000000000000,
+        generationHash: '2CA34D3EF86D68FF9879B7D6F3A675A9AEDB063F6062245341CB7A422CAB8D12',
+    },
+    nodes: [
+        { friendlyName: 'GCR-mainnet-dual1', roles: 7, url: 'http://mainnet-dual-1.gcr.superhow.net:3000' },
+        { friendlyName: 'GCR-mainnet-dual2', roles: 7, url: 'http://mainnet-dual-2.gcr.superhow.net:3000' },
+        { friendlyName: 'GCR-mainnet-dual3', roles: 7, url: 'http://mainnet-dual-3.gcr.superhow.net:3000' },
+    ],
+};
+
 const defaultNetworkConfig: Record<number, NetworkConfig> = {
-    104: defaultMainnetNetworkConfig
+    104: defaultMainnetNetworkConfig,
+    152: defaultTestnetNetworkConfig
 };
 
 const resolvedNetworkConfig: NetworkConfig = window['networkConfig'] || defaultNetworkConfig;

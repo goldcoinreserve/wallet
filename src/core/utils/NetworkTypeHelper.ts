@@ -23,7 +23,8 @@ export class NetworkTypeHelper {
      * Network types with their names
      */
     public static networkTypeList: NetworkNodeEntry[] = [
-        { value: NetworkType.MAIN_NET, label: 'GCR Testnet' },
+        { value: NetworkType.MAIN_NET, label: 'GCR Mainnet' },
+        { value: NetworkType.TEST_NET, label: 'GCR Testnet' }
     ];
 
     /**

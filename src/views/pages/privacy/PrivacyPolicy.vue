@@ -22,10 +22,9 @@
             <p class="paragraph">
                 If after you opt-in, you change your mind, you may withdraw your consent for us to contact you, for the continued
                 collection, use or disclosure of your information, at anytime, by contacting us at
-                <a href="mailto:contact@nemn.io">
-                    <b>contact@nemn.io</b>
+                <a href="mailto:info@goldcoinreserve.io">
+                    <b>info@goldcoinreserve.io</b>
                 </a>
-                or mailing us at: NEM Group Limited. Suite 7, Hadfield House Library Street, Gibraltar.
             </p>
             <h2 class="second-sub-title">Section 3 - Disclosure</h2>
             <p class="paragraph">
@@ -73,10 +72,9 @@
             <p class="paragraph">
                 If you would like to: access, correct, amend or delete any personal information we have about you, register a complaint, or
                 simply want more information contact our Privacy Compliance Officer at
-                <a href="mailto:support@nem.group">
-                    <b class="link">support@nem.group</b>
+                <a href="mailto:info@goldcoinreserve.io">
+                    <b class="link">info@goldcoinreserve.io</b>
                 </a>
-                or by mail at NEM Group Limited. NEM Group Limited. Suite 7, Hadfield House Library Street, Gibraltar.
             </p>
         </div>
         <button @click="backToLogin">{{ $t('back') }}</button>
