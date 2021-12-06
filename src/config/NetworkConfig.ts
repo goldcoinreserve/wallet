@@ -52,7 +52,7 @@ export interface NetworkConfig {
 
 export const defaultTestnetNetworkConfig: NetworkConfig = {
     explorerUrl: 'http://explorer-testnet.gcr.superhow.net/',
-    faucetUrl: 'http://faucet-testnet.gcr.superhow.net/',
+    faucetUrl: 'http://faucet.gcr.superhow.net/',
     defaultNetworkType: 152,
     networkConfigurationDefaults: {
         maxMosaicDivisibility: 9,
@@ -68,17 +68,16 @@ export const defaultTestnetNetworkConfig: NetworkConfig = {
         maxCosignedAccountsPerAccount: 1000,
         maxMessageSize: 4096,
         maxMosaicAtomicUnits: 300000000000000000,
-        currencyMosaicId: '686DA369E3F357C6',
-        harvestingMosaicId: '686DA369E3F357C6',
+        currencyMosaicId: '7259669BB7EB6A61',
+        harvestingMosaicId: '7259669BB7EB6A61',
         defaultDynamicFeeMultiplier: 100,
         epochAdjustment: 1638265052,
         totalChainImportance: 3000000000000000,
-        generationHash: 'FC32A39EB545DE567343C02E9A2E46C603137AAD9C70FC7DB7A379F25B63D32C',
+        generationHash: 'AF4C3D9A0219EE1D8B048A52029A58B89C345653AF3A56CF985C95E40530ADD3',
     },
     nodes: [
         { friendlyName: 'GCR-testnet-dual1', roles: 7, url: 'http://testnet-dual-1.gcr.superhow.net:3000' },
         { friendlyName: 'GCR-testnet-dual2', roles: 7, url: 'http://testnet-dual-2.gcr.superhow.net:3000' },
-        { friendlyName: 'GCR-testnet-dual3', roles: 7, url: 'http://testnet-dual-3.gcr.superhow.net:3000' },
 
     ],
 };
